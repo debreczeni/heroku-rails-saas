@@ -271,12 +271,16 @@ module HerokuRails
     end
 
     def output_destroy_commands(app)
-      puts "The #{app} had a few things removed from the heroku.yml."
-      puts "If they are no longer neccessary, then run the following commands:"
-      (@destroy_commands || []).each do |destroy_command|
-        puts destroy_command
+      if @@destroy_commands.any?
+        puts "The #{app} had a few things removed from the heroku.yml."
+        puts "If they are no longer neccessary, then run the following commands:"
+        puts "\n\n"
+        @destroy_commands.each do |destroy_command|
+          puts destroy_command
+        end
+        puts "\n\n"
+        puts "these commands may cause data loss so make sure you know that these are necessary"
       end
-      puts "these commands may cause data loss so make sure you know that these are necessary"
       # clear destroy commands
       @destroy_commands = []
     end
