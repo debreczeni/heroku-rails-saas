@@ -62,12 +62,12 @@ namespace :heroku do
       Rake::Task["heroku:before_each_deploy"].reenable
       Rake::Task["heroku:before_each_deploy"].invoke(app_name)
 
-      rake_cmd = HEROKU_CONFIG.rake_cmd(heroku_env)
+      cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
       if branch.present?
         @git_push_arguments ||= []
-        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master && #{rake_cmd} --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
       else
         puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy"
         exit(1)
@@ -116,7 +116,8 @@ namespace :heroku do
   desc "Opens a remote console"
   task :console do
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
-      system_with_echo "heroku console --app #{app_name}"
+      cmd = HEROKU_CONFIG.cmd(heroku_env)
+      system_with_echo "#{cmd} console --app #{app_name}"
     end
   end
 
@@ -181,8 +182,8 @@ namespace :heroku do
     desc "Migrates and restarts remote servers"
     task :migrate do
       HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
-        rake_cmd = HEROKU_CONFIG.rake_cmd(heroku_env)
-        system_with_echo "#{rake_cmd} --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        cmd = HEROKU_CONFIG.cmd(heroku_env)
+        system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
       end
     end
 

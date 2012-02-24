@@ -40,11 +40,11 @@ module HerokuRails
       stacks[app_env] || stacks['all']
     end
 
-    def rake_cmd(app_env)
+    def cmd(app_env)
       if self.stack(app_env) =~ /cedar/i
-        'heroku run rake'
+        'heroku run '
       else
-        'heroku rake'
+        'heroku '
       end
     end
 
