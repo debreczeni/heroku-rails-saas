@@ -271,7 +271,7 @@ module HerokuRails
     end
 
     def output_destroy_commands(app)
-      if @@destroy_commands.any?
+      if @destroy_commands.any?
         puts "The #{app} had a few things removed from the heroku.yml."
         puts "If they are no longer neccessary, then run the following commands:"
         puts "\n\n"
