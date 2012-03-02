@@ -262,9 +262,8 @@ module HerokuRails
     end
 
     def destroy_command(*args)
-      puts args.join(' ')
       @destroy_commands ||= []
-      @destroy_commands << @destroy_commands
+      @destroy_commands << args.join(' ')
     end
 
     def output_destroy_commands(app)
