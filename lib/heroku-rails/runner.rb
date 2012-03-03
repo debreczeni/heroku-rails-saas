@@ -153,7 +153,7 @@ module HerokuRails
         existing_addons = (@heroku.installed_addons(app_name) || []).map{|a| a["name"]}
 
         # all apps need the shared database
-        addons << "shared-database:5mb" unless  addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql/]}
+        addons << "shared-database:5mb" unless addons.index("shared-database:5mb") || addons.index("shared-database:20gb")
 
         # add "custom_domains" if that addon doesnt already exist
         # and we have domains configured for this app
@@ -235,9 +235,9 @@ module HerokuRails
       end
 
       if @environments.present?
-        @environments.each do |heroku_env|
-          app_name = @config.apps[heroku_env]
-          yield(heroku_env, app_name, "git@heroku.com:#{app_name}.git")
+        @environments.each do |env|
+          app_name = @config.app_name_on_heroku(env)
+          yield(env, app_name, "git@heroku.com:#{app_name}.git")
         end
       else
         puts "\nYou must first specify at least one Heroku app:
@@ -262,21 +262,18 @@ module HerokuRails
     end
 
     def destroy_command(*args)
+      # puts args.join(' ')
       @destroy_commands ||= []
       @destroy_commands << args.join(' ')
     end
 
     def output_destroy_commands(app)
-      if @destroy_commands.try(:any?)
-        puts "The #{app} had a few things removed from the heroku.yml."
-        puts "If they are no longer neccessary, then run the following commands:"
-        puts "\n\n"
-        @destroy_commands.each do |destroy_command|
-          puts destroy_command
-        end
-        puts "\n\n"
-        puts "these commands may cause data loss so make sure you know that these are necessary"
+      puts "The #{app} had a few things removed from the heroku.yml."
+      puts "If they are no longer neccessary, then run the following commands:\n\n"
+      (@destroy_commands || []).each do |destroy_command|
+        puts destroy_command
       end
+      puts "\n\nthese commands may cause data loss so make sure you know that these are necessary"
       # clear destroy commands
       @destroy_commands = []
     end

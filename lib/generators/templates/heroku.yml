@@ -1,33 +1,39 @@
+# Configuration settings for each app and thier environment should be located here
+# 'config/heroku/' and named appropiately they will be merged with the rest of the 
+# configuration settings
 apps:
-  # map the environments to your desired heroku app names
+  # map the apps and associated environments to your desired heroku app names
   # for example,
-  #   production: awesomeapp
-  # would create the RACK_ENV=production
-  # and deploy to http://awesomeapp.heroku.com
-  production: awesomeapp
-  staging: awesomeapp-staging
-  legacy: awesomeapp-legacy
+  #   awesomeapp:staging
+  # would create the RACK_ENV=staging
+  # and deploy to http://awesomeapp-staging.heroku.com
+  awesomeapp:
+    production: awesomeapp
+    staging: awesomeapp-staging
+    legacy: awesomeapp-legacy
 
 stacks:
   # choose the stacks you want to use for each app.
   # the all: setting sets the default
   all: bamboo-mri-1.9.2
 
-  # override on a per environment basis
-  legacy: bamboo-ree-1.8.7
+  # override on a per app and environment basis
+  awesomeapp:
+    legacy: bamboo-ree-1.8.7
 
 config:
-  # choose the configuration settings for all environments
+  # choose the configuration settings for all apps and thier environment
   all:
     BUNDLE_WITHOUT: "test:development"
     CONFIG_VAR1: "config1"
     CONFIG_VAR2: "config2"
 
-  # you can also override configuration settings for each environment
-  production:
-    CONFIG_VAR1: "config1-production"
-  staging:
-    CONFIG_VAR1: "config1-staging"
+  # you can also override configuration settings for each app and environment
+  awesomeapp:
+    production:
+      CONFIG_VAR1: "config1-production"
+    staging:
+      CONFIG_VAR1: "config1-staging"
 
 collaborators:
   # Be sure to add yourself as a collaborator, otherwise your
@@ -36,18 +42,23 @@ collaborators:
     - "my-heroku-email@somedomain.com"
     - "another-heroku-email@somedomain.com"
 
+  awesomeapp:
+    - "awesomeapp@somedomain.com"
+
 domains:
-  production:
-    - "awesomeapp.com"
-    - "www.awesomeapp.com"
+  awesomeapp:
+    production:
+      - "awesomeapp.com"
+      - "www.awesomeapp.com"
 
 addons:
   all:
     - custom_domains:basic
     # add any other addons here
 
-  production:
-    - ssl:piggyback
-    - cron:daily
-    # - newrelic:bronze
-    # production env specific addons here
+  awesomeapp:
+    production:
+      - ssl:piggyback
+      - cron:daily
+      # - newrelic:bronze
+      # production env specific addons here

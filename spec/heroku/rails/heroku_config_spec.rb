@@ -13,41 +13,42 @@ module HerokuRails
     describe "#apps" do
       it "should return the list of apps defined" do
         @config.apps.should have(2).apps
-        @config.apps.should include("production" => "awesomeapp")
-        @config.apps.should include("staging" => "awesomeapp-staging")
+        @config.apps.should include("awesomeapp")
+        @config.apps.should include("mediocreapp")
       end
     end
 
     describe "#app_names" do
       it "should return the list of apps defined" do
         @config.app_names.should have(2).names
-        @config.app_names.should include("awesomeapp")
-        @config.app_names.should include("awesomeapp-staging")
+        @config.apps.should include("awesomeapp")
+        @config.apps.should include("mediocreapp")
       end
     end
 
     describe "#app_environments" do
       it "should return a list of the environments defined" do
-        @config.app_environments.should have(2).environments
-        @config.app_environments.should include("production")
-        @config.app_environments.should include("staging")
+        @config.app_environments.should have(3).environments
+        @config.app_environments.should include("awesomeapp:production")
+        @config.app_environments.should include("awesomeapp:staging")
+        @config.app_environments.should include("awesomeapp:staging")
       end
     end
 
     describe "#stack" do
       it "should return the associated stack for an environment" do
-        @config.stack("staging").should == "bamboo-ree-1.8.7"
+        @config.stack("awesomeapp:staging").should == "bamboo-ree-1.8.7"
       end
 
       it "should default to the all setting if not explicitly defined" do
-        @config.stack("production").should == "bamboo-mri-1.9.2"
+        @config.stack("mediocreapp").should == "bamboo-mri-1.9.2"
       end
     end
 
     describe "#config" do
       context "staging environment" do
         before(:each) do
-          @config = @config.config("staging")
+          @config = @config.config("awesomeapp:staging")
         end
         it "should include configs defined in 'staging'" do
           @config["STAGING_CONFIG"].should == "special-staging"
@@ -64,9 +65,9 @@ module HerokuRails
     end
 
     describe "#collaborators" do
-      context "staging environment" do
+      context "awesomeapp:staging" do
         before(:each) do
-          @collaborators = @config.collaborators('staging')
+          @collaborators = @config.collaborators('awesomeapp:staging')
         end
 
         it "should include the collaborators defined in 'all'" do
@@ -83,12 +84,32 @@ module HerokuRails
           @collaborators.should_not include('production-user@somedomain.com')
         end
       end
+
+      context "mediocre:development" do
+        before(:each) do
+          @collaborators = @config.collaborators('mediocre:development')
+        end
+
+        it "should include the collaborators defined in 'all'" do
+          @collaborators.should include('all-user1@somedomain.com')
+          @collaborators.should include('all-user2@somedomain.com')
+          @collaborators.should have(3).collaborators
+        end
+
+        it "should include collaborators defined in 'development'" do
+          @collaborators.should include('mediocre-user@example.com')
+        end
+
+        it "should not include collaborators defined other apps" do
+          @collaborators.should_not include("staging-user@somedomain.com")
+        end
+      end
     end
 
     describe "#domains" do
       context "staging environment" do
         before(:each) do
-          @domains = @config.domains('staging')
+          @domains = @config.domains('awesomeapp:staging')
         end
 
         it "should include the domains defined in 'staging'" do
@@ -103,7 +124,7 @@ module HerokuRails
 
       context "production environment" do
         it "should include the domains defined in 'production'" do
-          @domains = @config.domains('production')
+          @domains = @config.domains('awesomeapp:production')
           @domains.should include('awesomeapp.com')
           @domains.should include('www.awesomeapp.com')
         end
@@ -113,7 +134,7 @@ module HerokuRails
     describe "#addons" do
       context "staging environment" do
         before(:each) do
-          @addons = @config.addons('staging')
+          @addons = @config.addons('awesomeapp:staging')
         end
 
         it "should include addons defined in 'all'" do
