@@ -1,10 +1,14 @@
 apps:
-  production: awesomeapp
-  staging: awesomeapp-staging
+  awesomeapp:
+    production: awesomeapp
+    staging: awesomeapp-staging
+  mediocreapp:
+    development: mediocreapp-dev1
 
 stacks:
   all: bamboo-mri-1.9.2
-  staging: bamboo-ree-1.8.7
+  awesomeapp:  
+    staging: bamboo-ree-1.8.7
 
 config:
   all:
@@ -12,37 +16,50 @@ config:
     CONFIG_VAR1: "config1"
     CONFIG_VAR2: "config2"
 
-  production:
-    CONFIG_VAR1: "config1-production"
+  awesomeapp:
+    production: 
+      CONFIG_VAR1: "config1-production"
+    staging:
+      CONFIG_VAR1: "config1-staging"
+      STAGING_CONFIG: "special-staging"
+  
+  mediocreapp:
+    development:
+      CONFIG_VAR1: "config-for-mediocre"
 
-  staging:
-    CONFIG_VAR1: "config1-staging"
-    STAGING_CONFIG: "special-staging"
 
 collaborators:
   all:
     - "all-user1@somedomain.com"
     - "all-user2@somedomain.com"
     - "all-user2@somedomain.com"
-  staging:
-    - "staging-user@somedomain.com"
-  production:
-    - "production-user@somedomain.com"
+  awesomeapp:
+    staging:
+      - "staging-user@somedomain.com"
+    production:
+      - "production-user@somedomain.com"
+  mediocre:
+    development: 
+      - "mediocre-user@example.com"
 
 domains:
-  staging:
-    - "staging.awesomeapp.com"
-  production:
-    - "awesomeapp.com"
-    - "www.awesomeapp.com"
+  awesomeapp:
+    staging:
+      - "staging.awesomeapp.com"
+    production:
+      - "awesomeapp.com"
+      - "www.awesomeapp.com"
+  mediocre:
+    development:
+      - "mediocreapp.com"
 
 addons:
   all:
     # add any other addons here
     - custom_domains:basic
     - newrelic:bronze
-
-  production:
-    # list production env specific addons here
-    - ssl:piggyback
-    - cron:daily
+  awesomeapp:
+    production:
+      # list production env specific addons here
+      - ssl:piggyback
+      - cron:daily

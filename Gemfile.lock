@@ -27,7 +27,7 @@ GEM
     linecache19 (0.5.12)
       ruby_core_source (>= 0.1.4)
     mime-types (1.17.2)
-    rbx-require-relative (0.0.5)
+    rbx-require-relative (0.0.9)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rspec (2.7.0)
