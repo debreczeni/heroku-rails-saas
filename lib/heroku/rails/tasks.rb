@@ -21,7 +21,9 @@ HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
   end
 end
 
-desc 'Select all Heroku apps for later command'
+debugger
+
+desc 'Select all Heroku apps for later command (production has to be explicitly declared)'
 task :all do
   HEROKU_RUNNER.all_environments
 end
