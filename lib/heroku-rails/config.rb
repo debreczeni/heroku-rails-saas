@@ -72,7 +72,6 @@ module HerokuRails
       domains = self.settings['domains'] || {}
       (domains[name] && domains[name][env]) || []
     end
-
     # return a list of collaborators for a particular app environment
     def collaborators(app_env)
       app_setting_list('collaborators', app_env)
@@ -96,19 +95,29 @@ module HerokuRails
 
     private 
 
-    def parse_yml(config_filepath)
-      YAML.load(ERB.new(File.read(config_filepath)).result) if File.exists?(config_filepath)
+    def parse_yml(config_filepath, options)
+      if File.exists?(config_filepath)
+        config_hash = YAML.load(ERB.new(File.read(config_filepath)).result) 
+        config_hash = add_all_namespace(config_hash) if options == :default
+        config_hash = add_app_namespace(File.basename(config_filepath, ".yml"), config_hash) if options == :apps
+        config_hash
+      end
     end
 
-    # Refactor: should capture filename as it correspond to the app, so configs could look like so
-    # (without the app_name)
-    # app: 
-    #  staging: asdfasdf
+    def add_all_namespace(hsh)
+      hsh.each_with_object({}) { |(k,v), h| h[k] = Hash["all" => v] }
+    end
+
+    def add_app_namespace(app_name, hsh)
+      hsh["apps"] = hsh.delete("env") if hsh.has_key?("env")
+      hsh.each_with_object({}) { |(k,v), h| h[k] = Hash[app_name => v] }
+    end
+
     def aggregate_heroku_configs(config_files)
-      config_files.each_with_object({}) do |config_file, hsh|
-        # overwrite all configs with the environment specific ones 
-        hsh.rmerge!(parse_yml(config_file))
-      end
+      hsh = {}
+      config_files[:apps].each_with_object(hsh) { |file, h| h.rmerge!(parse_yml(file, :apps)) }
+      # overwrite all configs with the environment specific ones
+      hsh.rmerge!(parse_yml(config_files[:default], :default))
     end
   end
 end

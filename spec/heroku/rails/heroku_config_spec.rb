@@ -3,7 +3,8 @@ require 'spec_helper'
 module HerokuRails
   describe Config do
     before(:each) do
-      @config = Config.new(config_path("heroku-config.yml"))
+      config_files = {:default => config_path("heroku-config.yml"), :apps => [config_path("awesomeapp.yml"), config_path("mediocreapp.yml")]}
+      @config = Config.new(config_files)
     end
 
     it "should read the configuration file" do
@@ -85,9 +86,9 @@ module HerokuRails
         end
       end
 
-      context "mediocre:development" do
+      context "mediocreapp:development" do
         before(:each) do
-          @collaborators = @config.collaborators('mediocre:development')
+          @collaborators = @config.collaborators('mediocreapp:development')
         end
 
         it "should include the collaborators defined in 'all'" do

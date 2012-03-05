@@ -3,7 +3,9 @@ Heroku Rails
 
 Easier configuration and deployment of Rails apps on Heroku
 
-Configure your Heroku environment via a YML file (config/heroku.yml) that defines all your environments, addons, and environment variables.
+Configure all your Heroku enviroments via a YML file (config/heroku.yml) that defines all your environments, addons, and environment variables.
+Configure your app specific Heroku environment via a YML file (config/heroku/<someappname>.yml) thats defines all your environments, addons, and 
+environment variables for <someappname>.
 
 Heroku Rails also handles asset packaging (via jammit), deployment of assets to s3 (via jammit-s3).
 
@@ -37,7 +39,28 @@ In config/heroku.yml you will need add the Heroku apps that you would like to at
 
     rails generate heroku:config
 
+If you want to defined more 
+
 ### Example Configuration File
+
+For all configuration settings
+
+    config:
+      BUNDLE_WITHOUT: "test:development"
+      CONFIG_VAR1: "config1"
+      CONFIG_VAR2: "config2"
+
+    # Be sure to add yourself as a collaborator, otherwise your
+    # access to the app will be revoked.
+    collaborators:
+      - "my-heroku-email@somedomain.com"
+      - "another-heroku-email@somedomain.com"
+
+    addons:
+      - custom_domains:basic
+      # add any other addons here
+
+For an app specific settings <someappname>
 
     apps:
       production: awesomeapp
@@ -45,36 +68,23 @@ In config/heroku.yml you will need add the Heroku apps that you would like to at
       legacy: awesomeapp-legacy
 
     stacks:
-      all: bamboo-mri-1.9.2
-      legacy: bamboo-ree-1.8.7
+      bamboo-mri-1.9.2
 
-    config:
-      all:
-        BUNDLE_WITHOUT: "test:development"
-      production:
-        MONGODB_URI: "mongodb://[username:password@]host1[:port1][/database]"
-      staging:
-        MONGODB_URI: "mongodb://[username:password@]host1[:port1][/database]"
+    production:
+      CONFIG_VAR1: "config1-production"
 
-    collaborators:
-      all:
-        - "heroku1@somedomain.com"
-        - "heroku2@somedomain.com"
+    collaborators
+      - "awesomeapp@somedomain.com"
 
     domains:
       production:
         - "awesomeapp.com"
         - "www.awesomeapp.com"
 
-    addons:
-      all:
-        - newrelic:bronze
-        # add any other addons here
-
-      production:
-        - ssl:piggyback
-        - cron:daily
-        # list production env specific addons here
+    production:
+      - ssl:piggyback
+      - cron:daily
+      - newrelic:bronze
 
 
 ### Setting up Heroku
@@ -102,7 +112,8 @@ is additive, you can easily select which servers to run a command on.
     rake demo staging heroku:restart
 
 A special rake task 'all' is created that causes any further commands to
-execute on all heroku apps.
+execute on all heroku apps (Note: Any environment labeled `production` will not
+be included, you must explicitly state it)
 
 Need to add remotes for each app?
 

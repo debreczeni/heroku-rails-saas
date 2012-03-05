@@ -1,0 +1,14 @@
+env:
+  development: mediocreapp-dev1
+
+config:
+  development:
+    CONFIG_VAR1: "config-for-mediocre"
+
+collaborators:
+  development: 
+    - "mediocre-user@example.com"
+
+domains:
+  development:
+    - "mediocreapp.com"
