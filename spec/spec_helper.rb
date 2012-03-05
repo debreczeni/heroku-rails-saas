@@ -11,8 +11,7 @@ RSpec.configure do |c|
 
   # returns the file path of a fixture setting file
   def config_path(filename)
-    [@fixture_path.join(filename)]
+    @fixture_path.join(filename)
   end
-
 end
 

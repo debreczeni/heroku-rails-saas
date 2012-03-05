@@ -2,7 +2,7 @@ require 'heroku-rails'
 
 HEROKU_CONFIG_FILE = File.join(HerokuRails::Config.root, 'config', 'heroku.yml')
 HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRails::Config.root, 'config', 'heroku')}/*.yml")
-HEROKU_CONFIG = HerokuRails::Config.new(HEROKU_APP_SPECIFIC_CONFIG_FILES << HEROKU_CONFIG_FILE)
+HEROKU_CONFIG = HerokuRails::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
 HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
 
 # create all the the environment specific tasks
@@ -21,9 +21,7 @@ HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
   end
 end
 
-debugger
-
-desc 'Select all Heroku apps for later command (production has to be explicitly declared)'
+desc 'Select all Heroku apps for later command (production must be explicitly declared)'
 task :all do
   HEROKU_RUNNER.all_environments
 end
