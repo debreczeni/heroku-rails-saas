@@ -1,53 +1,52 @@
-apps:
-  # map the environments to your desired heroku app names
-  # for example,
-  #   production: awesomeapp
-  # would create the RACK_ENV=production
-  # and deploy to http://awesomeapp.heroku.com
-  production: awesomeapp
-  staging: awesomeapp-staging
-  legacy: awesomeapp-legacy
+# Configuration settings for specific apps and thier environments should be located here
+# 'config/heroku/' and named appropiately they will be merged with the rest of the 
+# configuration settings
 
-stacks:
-  # choose the stacks you want to use for each app.
-  # the all: setting sets the default
-  all: bamboo-mri-1.9.2
+# The following is an example config file 'config/heroku/awesomeapp.yml'
+# which map the apps and associated environments to your desired heroku app names
+# for example,
+#   awesomeapp:staging
+# would create the RACK_ENV=staging
+# and deploy to http://awesomeapp-staging.heroku.com
 
-  # override on a per environment basis
-  legacy: bamboo-ree-1.8.7
+# apps:
+#   production: awesomeapp
+#   staging: awesomeapp-staging
+#   legacy: awesomeapp-legacy
 
+# stacks:
+#   bamboo-mri-1.9.2
+
+# production:
+#   CONFIG_VAR1: "config1-production"
+
+# collaborators
+#   - "awesomeapp@somedomain.com"
+
+# domains:
+#   production:
+#     - "awesomeapp.com"
+#     - "www.awesomeapp.com"
+
+# production:
+#   - ssl:piggyback
+#   - cron:daily
+#   - newrelic:bronze
+
+
+# The following are configuration settings formally under the :all key
+# for all apps and thier environments
 config:
-  # choose the configuration settings for all environments
-  all:
-    BUNDLE_WITHOUT: "test:development"
-    CONFIG_VAR1: "config1"
-    CONFIG_VAR2: "config2"
+  BUNDLE_WITHOUT: "test:development"
+  CONFIG_VAR1: "config1"
+  CONFIG_VAR2: "config2"
 
-  # you can also override configuration settings for each environment
-  production:
-    CONFIG_VAR1: "config1-production"
-  staging:
-    CONFIG_VAR1: "config1-staging"
-
+# Be sure to add yourself as a collaborator, otherwise your
+# access to the app will be revoked.
 collaborators:
-  # Be sure to add yourself as a collaborator, otherwise your
-  # access to the app will be revoked.
-  all:
-    - "my-heroku-email@somedomain.com"
-    - "another-heroku-email@somedomain.com"
-
-domains:
-  production:
-    - "awesomeapp.com"
-    - "www.awesomeapp.com"
+  - "my-heroku-email@somedomain.com"
+  - "another-heroku-email@somedomain.com"
 
 addons:
-  all:
-    - custom_domains:basic
-    # add any other addons here
-
-  production:
-    - ssl:piggyback
-    - cron:daily
-    # - newrelic:bronze
-    # production env specific addons here
+  - custom_domains:basic
+  # add any other addons here

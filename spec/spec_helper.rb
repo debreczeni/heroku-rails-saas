@@ -13,6 +13,5 @@ RSpec.configure do |c|
   def config_path(filename)
     @fixture_path.join(filename)
   end
-
 end
 
