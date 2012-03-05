@@ -1,0 +1,32 @@
+env:
+  production: awesomeapp
+  staging: awesomeapp-staging
+
+stacks: 
+  staging: bamboo-ree-1.8.7
+
+config:
+  production: 
+    CONFIG_VAR1: "config1-production"
+  staging:
+    CONFIG_VAR1: "config1-staging"
+    STAGING_CONFIG: "special-staging"
+
+collaborators:
+  staging:
+    - "staging-user@somedomain.com"
+  production:
+    - "production-user@somedomain.com"
+
+domains:
+  staging:
+    - "staging.awesomeapp.com"
+  production:
+    - "awesomeapp.com"
+    - "www.awesomeapp.com"
+
+addons:
+  production:
+    # list production env specific addons here
+    - ssl:piggyback
+    - cron:daily

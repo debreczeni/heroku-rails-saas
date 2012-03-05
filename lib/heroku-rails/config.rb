@@ -3,6 +3,8 @@ require 'erb'
 module HerokuRails
   class Config
 
+    SEPERATOR = ":"
+
     class << self
       def root
         @heroku_rails_root || ENV["RAILS_ROOT"] || "."
@@ -10,59 +12,66 @@ module HerokuRails
       def root=(root)
         @heroku_rails_root = root
       end
+      def app_name(app, env)
+        "#{app}#{SEPERATOR}#{env}"
+      end
     end
 
     attr_accessor :settings
 
-    def initialize(config_filepath)
-      if File.exists?(config_filepath)
-        self.settings = YAML.load(ERB.new(File.read(config_filepath)).result) || {}
-      else
-        self.settings = {}
-      end
+    def initialize(config_files)
+      self.settings = aggregate_heroku_configs(config_files)
     end
 
     def apps
-      self.settings['apps'] || {}
+      self.settings['apps'] || []
     end
 
     def app_names
-      apps.values
+      apps.keys
     end
 
+    # Returns the app name on heroku froma string format like so: `app:env>`
+    # Allows for `rake <app:env> [<app:env>] <command>`
+    def app_name_on_heroku(string)
+      app_name, env = string.split(SEPERATOR)
+      apps[app_name][env] 
+    end
+
+    # return all enviromnets in this format app:env
     def app_environments
-      apps.keys
+      apps.each_with_object([]) do |(app, hsh), arr|
+        hsh.each { |env, app_name| arr << self.class.app_name(app, env) }
+      end
     end
 
     # return the stack setting for a particular app environment
     def stack(app_env)
+      name, env = app_env.split(SEPERATOR)
       stacks = self.settings['stacks'] || {}
-      stacks[app_env] || stacks['all']
-    end
-
-    def cmd(app_env)
-      if self.stack(app_env) =~ /cedar/i
-        'heroku run '
-      else
-        'heroku '
-      end
+      (stacks[name] && stacks[name][env]) || stacks['all']
     end
 
     # pull out the config setting hash for a particular app environment
     def config(app_env)
+      name, env = app_env.split(SEPERATOR)
       config = self.settings['config'] || {}
       all = config['all'] || {}
 
+      app_configs = (config[name] && config[name].reject { |k,v| v.class == Hash }) || {} 
+      # overwrite app configs with the environment specific ones
+      merged_environment_configs = app_configs.merge((config[name] && config[name][env]) || {})
+
       # overwrite all configs with the environment specific ones
-      all.merge(config[app_env] || {})
+      all.merge(merged_environment_configs)
     end
 
     # return a list of domains for a particular app environment
     def domains(app_env)
+      name, env = app_env.split(SEPERATOR)
       domains = self.settings['domains'] || {}
-      domains[app_env] || []
+      (domains[name] && domains[name][env]) || []
     end
-
     # return a list of collaborators for a particular app environment
     def collaborators(app_env)
       app_setting_list('collaborators', app_env)
@@ -75,12 +84,40 @@ module HerokuRails
 
     protected
 
-    def app_setting_list(setting_key, app)
+    def app_setting_list(setting_key, app_env)
+      name, env = app_env.split(SEPERATOR)
       setting = self.settings[setting_key] || {}
       all = setting['all'] || []
 
       # add in collaborators from app environment to the ones defined in all
-      (all + (setting[app] || [])).uniq
+      (all + (setting[name][env] || [])).uniq
+    end
+
+    private 
+
+    def parse_yml(config_filepath, options)
+      if File.exists?(config_filepath)
+        config_hash = YAML.load(ERB.new(File.read(config_filepath)).result) 
+        config_hash = add_all_namespace(config_hash) if options == :default
+        config_hash = add_app_namespace(File.basename(config_filepath, ".yml"), config_hash) if options == :apps
+        config_hash
+      end
+    end
+
+    def add_all_namespace(hsh)
+      hsh.each_with_object({}) { |(k,v), h| h[k] = Hash["all" => v] }
+    end
+
+    def add_app_namespace(app_name, hsh)
+      hsh["apps"] = hsh.delete("env") if hsh.has_key?("env")
+      hsh.each_with_object({}) { |(k,v), h| h[k] = Hash[app_name => v] }
+    end
+
+    def aggregate_heroku_configs(config_files)
+      hsh = {}
+      config_files[:apps].each_with_object(hsh) { |file, h| h.rmerge!(parse_yml(file, :apps)) }
+      # overwrite all configs with the environment specific ones
+      hsh.rmerge!(parse_yml(config_files[:default], :default))
     end
   end
 end
