@@ -4,8 +4,8 @@ Heroku Rails
 Easier configuration and deployment of Rails apps on Heroku
 
 Configure all your Heroku enviroments via a YML file (config/heroku.yml) that defines all your environments, addons, and environment variables.
-Configure your app specific Heroku environment via a YML file (config/heroku/<someappname>.yml) thats defines all your environments, addons, and 
-environment variables for <someappname>.
+Configure your app specific Heroku environment via a YML file (config/heroku/awesomeapp.yml) thats defines all your environments, addons, and 
+environment variables for awesomeapp.
 
 Heroku Rails also handles asset packaging (via jammit), deployment of assets to s3 (via jammit-s3).
 
@@ -60,7 +60,7 @@ For all configuration settings
       - custom_domains:basic
       # add any other addons here
 
-For an app specific settings <someappname>
+For an app specific settings awesomeapp
 
     apps:
       production: awesomeapp
