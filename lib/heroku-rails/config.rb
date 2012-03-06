@@ -90,7 +90,7 @@ module HerokuRails
       all = setting['all'] || []
 
       # add in collaborators from app environment to the ones defined in all
-      (all + (setting[name][env] || [])).uniq
+      (all + ((setting[name] && setting[name][env]) || [])).uniq
     end
 
     private 
