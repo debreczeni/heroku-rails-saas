@@ -23,7 +23,7 @@ end
 
 desc 'Select all Heroku apps for later command (production must be explicitly declared)'
 task :all do
-  HEROKU_RUNNER.all_environments
+  HEROKU_RUNNER.all_environments(true)
 end
 
 namespace :heroku do
@@ -32,14 +32,16 @@ namespace :heroku do
   end
 
   desc 'Add git remotes for all apps in this project'
-  task :remotes => :all do
+  task :remotes do
+    HEROKU_RUNNER.all_environments
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
       system_with_echo("git remote add #{heroku_env} #{repo}")
     end
   end
 
   desc 'Lists configured apps'
-  task :apps => :all do
+  task :apps do
+    HEROKU_RUNNER.all_environments
     puts "\n"
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
       puts "#{heroku_env} maps to the Heroku app #{app_name} located at:"
