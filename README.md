@@ -103,17 +103,22 @@ Run `rake heroku:setup` every time you edit the heroku.yml. It will only make in
 After configuring your Heroku apps you can use rake tasks to control the
 apps.
 
-    rake production heroku:deploy
+    rake <app_name>:production heroku:deploy
 
 A rake task with the shorthand name of each app is now available and adds that
 server to the list that subsequent commands will execute on. Because this list
 is additive, you can easily select which servers to run a command on.
 
-    rake demo staging heroku:restart
+    rake <app_name>:demo <app_name>:staging heroku:restart
 
 A special rake task 'all' is created that causes any further commands to
 execute on all heroku apps (Note: Any environment labeled `production` will not
-be included, you must explicitly state it)
+be included, you must explicitly state it).
+
+Futhermore there are rake task 'environments' created from environments in configs
+that causes any further commands to execute on all heroku apps.
+
+    rake all:production heroku:info
 
 Need to add remotes for each app?
 

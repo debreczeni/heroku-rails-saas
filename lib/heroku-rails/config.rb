@@ -31,7 +31,7 @@ module HerokuRails
       apps.keys
     end
 
-    # Returns the app name on heroku froma string format like so: `app:env>`
+    # Returns the app name on heroku froma string format like so: `app:env`
     # Allows for `rake <app:env> [<app:env>] <command>`
     def app_name_on_heroku(string)
       app_name, env = string.split(SEPERATOR)
@@ -39,10 +39,18 @@ module HerokuRails
     end
 
     # return all enviromnets in this format app:env
-    def app_environments
+    def app_environments(env_filter="")
       apps.each_with_object([]) do |(app, hsh), arr|
-        hsh.each { |env, app_name| arr << self.class.app_name(app, env) }
+        hsh.each { |env, app_name| arr << self.class.app_name(app, env) if env_filter.blank? || env == env_filter }
       end
+    end
+
+    # return all environments e.g. staging, production, development
+    def all_environments 
+      environments = apps.each_with_object([]) do |(app, hsh), arr|
+        hsh.each { |env, app_name| arr << env }
+      end
+      environments.uniq
     end
 
     # return the stack setting for a particular app environment
@@ -90,7 +98,7 @@ module HerokuRails
       all = setting['all'] || []
 
       # add in collaborators from app environment to the ones defined in all
-      (all + (setting[name][env] || [])).uniq
+      (all + ((setting[name] && setting[name][env]) || [])).uniq
     end
 
     private 
