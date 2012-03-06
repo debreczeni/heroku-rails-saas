@@ -29,10 +29,15 @@ module HerokuRails
       @environments << env
     end
 
-    # use all environments
+    # use all environments or filter out production environments
     def all_environments(filter=false)
       @environments = @config.app_environments 
       filter ? @environments.reject! { |app| app[production_regex] } : @environments
+    end
+
+    # use all heroku apps filtered by environments
+    def environments(env)
+      @environments = @config.app_environments(env)
     end
 
     # setup apps (create if necessary)
