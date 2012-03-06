@@ -26,6 +26,13 @@ task :all do
   HEROKU_RUNNER.all_environments(true)
 end
 
+(HEROKU_CONFIG.all_environments).each do |env|
+  desc "Select all Heroku apps in #{env} environment"
+  task "all:#{env}" do
+    HEROKU_RUNNER.environments(env)
+  end
+end
+
 namespace :heroku do
   def system_with_echo(*args)
     HEROKU_RUNNER.system_with_echo(*args)
