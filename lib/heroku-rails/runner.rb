@@ -30,8 +30,9 @@ module HerokuRails
     end
 
     # use all environments
-    def all_environments
-      @environments = @config.app_environments.reject { |heroku_app_name| heroku_app_name[production_regex] } 
+    def all_environments(filter=false)
+      @environments = @config.app_environments 
+      filter ? @environments.reject! { |app| app[production_regex] } : @environments
     end
 
     # setup apps (create if necessary)
@@ -285,7 +286,7 @@ module HerokuRails
     private
 
     def production_regex
-       Regexp.new("#{@config.class::SEPERATOR}[production|prod|live]")
+       Regexp.new("#{@config.class::SEPERATOR}(production|prod|live)")
     end
   end
 end
