@@ -172,7 +172,7 @@ module HerokuRails
           # check to see if we need to delete this addon
           unless addons.include?(existing_addon)
             # delete this addon if they arent on the approved list
-            destroy_command "heroku addons:remove #{existing_addon} --app #{app_name}"
+            destroy_command "heroku addons:remove #{existing_addon} --app #{app_name} --confirm #{app_name}"
           end
         end
 
