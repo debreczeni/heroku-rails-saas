@@ -236,7 +236,7 @@ module HerokuRails
         exit(1)
       end
 
-      if @environments.blank? && @config.apps.size == 1
+      if (@environments.nil? || @environments.empty?) && @config.apps.size == 1
         @environments = [@config.app_environments.first]
       end
 
