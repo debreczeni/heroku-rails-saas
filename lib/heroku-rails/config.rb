@@ -41,7 +41,7 @@ module HerokuRails
     # return all enviromnets in this format app:env
     def app_environments(env_filter="")
       apps.each_with_object([]) do |(app, hsh), arr|
-        hsh.each { |env, app_name| arr << self.class.app_name(app, env) if env_filter.blank? || env == env_filter }
+        hsh.each { |env, app_name| arr << self.class.app_name(app, env) if (env_filter.nil? || env_filter.empty?) || env == env_filter }
       end
     end
 
