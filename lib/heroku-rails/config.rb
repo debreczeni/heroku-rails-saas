@@ -60,6 +60,14 @@ module HerokuRails
       (stacks[name] && stacks[name][env]) || stacks['all']
     end
 
+    def cmd(app_env)
+      if self.stack(app_env) =~ /cedar/i
+        'heroku run '
+      else
+        'heroku '
+      end
+    end
+    
     # pull out the config setting hash for a particular app environment
     def config(app_env)
       name, env = app_env.split(SEPERATOR)
