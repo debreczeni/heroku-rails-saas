@@ -42,7 +42,7 @@ namespace :heroku do
   task :remotes do
     HEROKU_RUNNER.all_environments
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
-      system_with_echo("git remote add #{heroku_env} #{repo}")
+      system_with_echo("git remote add #{app_name} #{repo}")
     end
   end
 
