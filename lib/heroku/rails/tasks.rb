@@ -65,10 +65,12 @@ namespace :heroku do
     end
   end
 
-  desc "Deploys, migrates and restarts latest code"
-  task :deploy => "heroku:before_deploy" do
+  desc "Deploys, migrates and restarts latest code (optional tag argument)"
+  task :deploy, [:tag] => "heroku:before_deploy" do |t, args|
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
-      puts "\n\nDeploying to #{app_name}..."
+      header = "\n\nDeploying to #{app_name}..."
+      header += "with tag #{args[:tag]}..." if args[:tag]
+      puts header
       # set the current heroku_app so that callbacks can read the data
       @heroku_app = {:env => heroku_env, :app_name => app_name, :repo => repo}
       Rake::Task["heroku:before_each_deploy"].reenable
@@ -77,11 +79,27 @@ namespace :heroku do
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
-      if branch.present?
+      tag = `git tag`[/^#{args[:tag]}\n/].to_s
+
+      if (branch.present? && args[:tag].nil?) || (tag.present? && !args[:tag].nil?)
         @git_push_arguments ||= []
-        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+
+        to_deploy = if tag.present?
+          @git_push_arguments << '--force'
+          "#{args[:tag]}^{}" 
+        else
+          "#{branch}"
+        end
+
+        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{to_deploy}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+
       else
-        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy"
+        if args[:tag]
+          puts "Unable to determine the git tag, please make sure the tag you'd like to deploy exist."
+        else
+          puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
+        end
+
         exit(1)
       end
       Rake::Task["heroku:after_each_deploy"].reenable
