@@ -65,12 +65,10 @@ namespace :heroku do
     end
   end
 
-  desc "Deploys, migrates and restarts latest code (optional tag argument)"
-  task :deploy, [:tag] => "heroku:before_deploy" do |t, args|
+  desc "Deploys, migrates and restarts latest git tag"
+  task :deploy => "heroku:before_deploy" do |t, args|
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
-      header = "\n\nDeploying to #{app_name}..."
-      header += "with tag #{args[:tag]}..." if args[:tag]
-      puts header
+      puts "\n\nDeploying to #{app_name}..."
       # set the current heroku_app so that callbacks can read the data
       @heroku_app = {:env => heroku_env, :app_name => app_name, :repo => repo}
       Rake::Task["heroku:before_each_deploy"].reenable
@@ -79,26 +77,33 @@ namespace :heroku do
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
-      tag = `git tag`[/^#{args[:tag]}\n/].to_s
+      all_tags = `git tag`
+      target_tag = all_tags[/.+\Z/] # Set lastest tag as default
 
-      if (branch.present? && args[:tag].nil?) || (tag.present? && !args[:tag].nil?)
+      begin
+        puts "\nGit tags:"
+        puts all_tags
+        print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+        input_tag = STDIN.gets.chomp
+        if input_tag.present?
+          if all_tags[/^#{input_tag}\n/].present?
+            target_tag = input_tag
+            invalid = false
+          else
+            puts "\n\nInvalid git tag!"
+            invalid = true
+          end
+        end  
+      end while invalid
+      
+      if branch.present?
         @git_push_arguments ||= []
-
-        to_deploy = if tag.present?
-          @git_push_arguments << '--force'
-          "#{args[:tag]}^{}" 
-        else
-          "#{branch}"
-        end
+        @git_push_arguments << '--force'
+        to_deploy = "#{target_tag}^{}"
 
         system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{to_deploy}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
-
       else
-        if args[:tag]
-          puts "Unable to determine the git tag, please make sure the tag you'd like to deploy exist."
-        else
-          puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
-        end
+        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
 
         exit(1)
       end
