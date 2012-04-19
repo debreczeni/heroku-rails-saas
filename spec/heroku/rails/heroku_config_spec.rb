@@ -37,8 +37,12 @@ module HerokuRails
     end
 
     describe "#stack" do
-      it "should return the associated stack for an environment" do
+      it "should return the associated stack for awesomeapp:staging" do
         @config.stack("awesomeapp:staging").should == "bamboo-ree-1.8.7"
+      end
+
+      it "should return the default stack for awesomeapp:production" do
+        @config.stack("awesomeapp:production").should == "bamboo-mri-1.9.2"
       end
 
       it "should default to the all setting if not explicitly defined" do
