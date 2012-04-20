@@ -274,7 +274,7 @@ module HerokuRails
       # clear destroy commands
       @destroy_commands = []
     end
-    
+
     def command(*args)
       system(*args)
     end
