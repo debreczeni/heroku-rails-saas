@@ -224,7 +224,7 @@ module HerokuRails
       end
 
       if (@environments.nil? || @environments.empty?) && @config.apps.size == 1
-        @environments = [@config.app_environments.first]
+        @environments = [all_environments(true).try(:first)].compact
       end
 
       if @environments.present?
