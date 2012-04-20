@@ -74,7 +74,7 @@ module HerokuRails
       config = self.settings['config'] || {}
       all = config['all'] || {}
 
-      app_configs = (config[name] && config[name].reject { |k,v| v.class == Hash }) || {} 
+      app_configs = (config[name] && config[name].reject { |k,v| v.class == Hash }) || {}
       # overwrite app configs with the environment specific ones
       merged_environment_configs = app_configs.merge((config[name] && config[name][env]) || {})
 
@@ -109,11 +109,11 @@ module HerokuRails
       (all + ((setting[name] && setting[name][env]) || [])).uniq
     end
 
-    private 
+    private
 
     def parse_yml(config_filepath, options)
       if File.exists?(config_filepath)
-        config_hash = YAML.load(ERB.new(File.read(config_filepath)).result) 
+        config_hash = YAML.load(ERB.new(File.read(config_filepath)).result)
         config_hash = add_all_namespace(config_hash) if options == :default
         config_hash = add_app_namespace(File.basename(config_filepath, ".yml"), config_hash) if options == :apps
         config_hash
