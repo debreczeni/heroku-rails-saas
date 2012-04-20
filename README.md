@@ -57,7 +57,7 @@ For all configuration settings
       - "another-heroku-email@somedomain.com"
 
     addons:
-      - custom_domains:basic
+      - scheduler:standard
       # add any other addons here
 
 For an app specific settings awesomeapp

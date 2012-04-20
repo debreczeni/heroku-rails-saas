@@ -148,12 +148,6 @@ module HerokuRails
         # all apps need the shared database
         addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql/]}
 
-        # add "custom_domains" if that addon doesnt already exist
-        # and we have domains configured for this app
-        addons << "custom_domains:basic" unless @config.domains(heroku_env).empty? or
-                                                addons.any?{|a| a =~ /custom_domains/} or
-                                                existing_addons.any?{|a| a =~ /custom_domains/}
-
         # remove the addons that need to be removed
         existing_addons.each do |existing_addon|
           # check to see if we need to delete this addon
