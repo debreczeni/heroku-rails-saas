@@ -9,11 +9,18 @@ module HerokuRails
       def root
         @heroku_rails_root || ENV["RAILS_ROOT"] || "."
       end
+
       def root=(root)
         @heroku_rails_root = root
       end
+
       def app_name(app, env)
         "#{app}#{SEPERATOR}#{env}"
+      end
+
+      def extract_environment_from(app_env)
+        name, env = app_env.split(SEPERATOR)
+        env
       end
     end
 
