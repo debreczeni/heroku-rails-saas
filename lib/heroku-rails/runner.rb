@@ -234,11 +234,11 @@ module HerokuRails
         end
       else
         puts "\nYou must first specify at least one Heroku app:
-          rake <app> [<app>] <command>
-          rake production restart
-          rake demo staging deploy"
+          rake <app>:<environment> [<app>:<environment>] <command>
+          rake awesomeapp:production restart
+          rake demo:staging deploy"
 
-        puts "\n\nYou can use also command all Heroku apps for this project:
+        puts "\n\nYou can use also command all Heroku apps(except production environments) for this project:
           rake all heroku:setup\n"
 
         exit(1)
