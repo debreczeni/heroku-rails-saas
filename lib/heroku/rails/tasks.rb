@@ -65,8 +65,8 @@ namespace :heroku do
     end
   end
 
-  desc "Deploys, migrates and restarts latest code"
-  task :deploy => "heroku:before_deploy" do
+  desc "Deploys, migrates and restarts latest git tag"
+  task :deploy => "heroku:before_deploy" do |t, args|
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
       puts "\n\nDeploying to #{app_name}..."
       # set the current heroku_app so that callbacks can read the data
@@ -77,13 +77,35 @@ namespace :heroku do
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
+      all_tags = `git tag`
+      target_tag = all_tags[/.+\Z/] # Set lastest tag as default
+
+      begin
+        puts "\nGit tags:"
+        puts all_tags
+        print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+        input_tag = STDIN.gets.chomp
+        if input_tag.present?
+          if all_tags[/^#{input_tag}\n/].present?
+            target_tag = input_tag
+            invalid = false
+          else
+            puts "\n\nInvalid git tag!"
+            invalid = true
+          end
+        end  
+      end while invalid
+      
       if branch.present?
         @git_push_arguments ||= []
+        @git_push_arguments << '--force'
+        to_deploy = "#{target_tag}^{}"
         system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
         Rake::Task["heroku:setup:config"].invoke
         system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
       else
-        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy"
+        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
+
         exit(1)
       end
       Rake::Task["heroku:after_each_deploy"].reenable
