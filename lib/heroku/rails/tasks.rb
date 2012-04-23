@@ -73,13 +73,15 @@ namespace :heroku do
       @heroku_app = {:env => heroku_env, :app_name => app_name, :repo => repo}
       Rake::Task["heroku:before_each_deploy"].reenable
       Rake::Task["heroku:before_each_deploy"].invoke(app_name)
-      
+
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
       if branch.present?
         @git_push_arguments ||= []
-        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
+        Rake::Task["heroku:setup:config"].invoke
+        system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
       else
         puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy"
         exit(1)
