@@ -5,7 +5,7 @@ HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRails::Config.roo
 HEROKU_CONFIG = HerokuRails::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
 HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
 
-# create all the the environment specific tasks
+# create all the environment specific tasks
 (HEROKU_CONFIG.apps).each do |app, hsh|
   hsh.each do |env, heroku_env|
     app_name = HerokuRails::Config.app_name(app, env)
@@ -73,7 +73,7 @@ namespace :heroku do
       @heroku_app = {:env => heroku_env, :app_name => app_name, :repo => repo}
       Rake::Task["heroku:before_each_deploy"].reenable
       Rake::Task["heroku:before_each_deploy"].invoke(app_name)
-      
+
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
@@ -100,8 +100,9 @@ namespace :heroku do
         @git_push_arguments ||= []
         @git_push_arguments << '--force'
         to_deploy = "#{target_tag}^{}"
-
-        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{to_deploy}:master && #{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
+        Rake::Task["heroku:setup:config"].invoke
+        system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
       else
         puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
 
