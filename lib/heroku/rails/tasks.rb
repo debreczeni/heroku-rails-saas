@@ -5,7 +5,7 @@ HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRails::Config.roo
 HEROKU_CONFIG = HerokuRails::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
 HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
 
-# create all the the environment specific tasks
+# create all the environment specific tasks
 (HEROKU_CONFIG.apps).each do |app, hsh|
   hsh.each do |env, heroku_env|
     app_name = HerokuRails::Config.app_name(app, env)
