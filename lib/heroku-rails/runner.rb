@@ -145,7 +145,7 @@ module HerokuRails
         existing_addons = (@heroku.installed_addons(app_name) || []).map{|a| a["name"]}
 
         # all apps need the shared database
-        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql/]}
+        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/]}
 
         # remove the addons that need to be removed
         existing_addons.each do |existing_addon|
