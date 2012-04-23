@@ -270,7 +270,7 @@ module HerokuRails
     end
 
     def command(*args)
-      system(*args)
+      raise "*** command \"#{args.join ' '}\" failed" unless system(*args)
     end
 
     private
