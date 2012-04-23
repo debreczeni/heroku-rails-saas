@@ -12,5 +12,5 @@ collaborators:
 
 addons:
   # add any other addons here
-  - custom_domains:basic
+  - scheduler:standard
   - newrelic:bronze

@@ -143,7 +143,7 @@ module HerokuRails
         end
 
         it "should include addons defined in 'all'" do
-          @addons.should include('custom_domains:basic')
+          @addons.should include('scheduler:standard')
           @addons.should include('newrelic:bronze')
         end
 

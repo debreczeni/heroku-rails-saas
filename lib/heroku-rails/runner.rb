@@ -104,14 +104,13 @@ module HerokuRails
     # setup configuration
     def setup_config
       authorize unless @heroku
-      each_heroku_app do |heroku_env, app_name, repo|
+      each_heroku_app do |app_env, app_name, repo|
         # get the configuration that we are aiming towards
-        new_config = @config.config(heroku_env)
+        new_config = @config.config(app_env)
 
-        # default RACK_ENV to the heroku_env (unless its manually set to something else)
-        unless new_config["RACK_ENV"].to_s.length > 0
-          new_config["RACK_ENV"] = heroku_env
-        end
+        # default RACK_ENV and RAILS_ENV to the heroku_env (unless its manually set to something else)
+        new_config["RACK_ENV"]  = HerokuRails::Config.extract_environment_from(app_env) unless new_config["RACK_ENV"]
+        new_config["RAILS_ENV"] = HerokuRails::Config.extract_environment_from(app_env) unless new_config["RAILS_ENV"]
 
         # get the existing config from heroku's servers
         existing_config = @heroku.config_vars(app_name) || {}
@@ -146,13 +145,7 @@ module HerokuRails
         existing_addons = (@heroku.installed_addons(app_name) || []).map{|a| a["name"]}
 
         # all apps need the shared database
-        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql/]}
-
-        # add "custom_domains" if that addon doesnt already exist
-        # and we have domains configured for this app
-        addons << "custom_domains:basic" unless @config.domains(heroku_env).empty? or
-                                                addons.any?{|a| a =~ /custom_domains/} or
-                                                existing_addons.any?{|a| a =~ /custom_domains/}
+        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/]}
 
         # remove the addons that need to be removed
         existing_addons.each do |existing_addon|
@@ -224,7 +217,7 @@ module HerokuRails
       end
 
       if (@environments.nil? || @environments.empty?) && @config.apps.size == 1
-        @environments = [@config.app_environments.first]
+        @environments = [all_environments(true).try(:first)].compact
       end
 
       if @environments.present?
@@ -234,11 +227,11 @@ module HerokuRails
         end
       else
         puts "\nYou must first specify at least one Heroku app:
-          rake <app> [<app>] <command>
-          rake production restart
-          rake demo staging deploy"
+          rake <app>:<environment> [<app>:<environment>] <command>
+          rake awesomeapp:production restart
+          rake demo:staging deploy"
 
-        puts "\n\nYou can use also command all Heroku apps for this project:
+        puts "\n\nYou can use also command all Heroku apps(except production environments) for this project:
           rake all heroku:setup\n"
 
         exit(1)
@@ -272,9 +265,9 @@ module HerokuRails
       # clear destroy commands
       @destroy_commands = []
     end
-    
+
     def command(*args)
-      system(*args)
+      raise "*** command \"#{args.join ' '}\" failed" unless system(*args)
     end
 
     private
