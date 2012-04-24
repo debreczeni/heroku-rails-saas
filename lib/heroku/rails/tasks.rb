@@ -78,7 +78,7 @@ namespace :heroku do
       if heroku_env == "production"
         branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
         all_tags = `git tag`
-        target_tag = all_tags[/.+\Z/] # Set lastest tag as default
+        target_tag = `git describe --tags --abbrev=0`.chomp # Set lastest tag as default
 
         begin
           puts "\nGit tags:"
@@ -102,8 +102,10 @@ namespace :heroku do
           @git_push_arguments << '--force'
           to_deploy = "#{target_tag}^{}"
           system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
+          system_with_echo "heroku maintenance:on --app #{app_name}"
           Rake::Task["heroku:setup:config"].invoke
           system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+          system_with_echo "heroku maintenance:off --app #{app_name}"
         else
           puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
 
