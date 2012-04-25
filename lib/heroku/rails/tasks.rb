@@ -75,39 +75,41 @@ namespace :heroku do
       Rake::Task["heroku:before_each_deploy"].invoke(app_name)
 
       cmd = HEROKU_CONFIG.cmd(heroku_env)
+      if heroku_env == "production"
+        branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
+        all_tags = `git tag`
+        target_tag = all_tags[/.+\Z/] # Set lastest tag as default
 
-      branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
-      all_tags = `git tag`
-      target_tag = all_tags[/.+\Z/] # Set lastest tag as default
-
-      begin
-        puts "\nGit tags:"
-        puts all_tags
-        print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
-        input_tag = STDIN.gets.chomp
-        if input_tag.present?
-          if all_tags[/^#{input_tag}\n/].present?
-            target_tag = input_tag
-            invalid = false
-          else
-            puts "\n\nInvalid git tag!"
-            invalid = true
-          end
-        end  
-      end while invalid
-      
-      if branch.present?
-        @git_push_arguments ||= []
-        @git_push_arguments << '--force'
-        to_deploy = "#{target_tag}^{}"
-        system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
-        Rake::Task["heroku:setup:config"].invoke
-        system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        begin
+          puts "\nGit tags:"
+          puts all_tags
+          print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+          input_tag = STDIN.gets.chomp
+          if input_tag.present?
+            if all_tags[/^#{input_tag}\n/].present?
+              target_tag = input_tag
+              invalid = false
+            else
+              puts "\n\nInvalid git tag!"
+              invalid = true
+            end
+          end  
+        end while invalid
       else
-        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
+        if branch.present?
+          @git_push_arguments ||= []
+          @git_push_arguments << '--force'
+          to_deploy = "#{target_tag}^{}"
+          system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{branch}:master"
+          Rake::Task["heroku:setup:config"].invoke
+          system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
+        else
+          puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy."
 
-        exit(1)
+          exit(1)
+        end
       end
+      
       Rake::Task["heroku:after_each_deploy"].reenable
       Rake::Task["heroku:after_each_deploy"].invoke(app_name)
       puts "\n"
