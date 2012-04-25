@@ -96,6 +96,7 @@ namespace :heroku do
           end  
         end while invalid
       else
+        branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
         if branch.present?
           @git_push_arguments ||= []
           @git_push_arguments << '--force'
