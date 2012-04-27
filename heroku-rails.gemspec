@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "heroku-rails-saas"
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.authors = [ "Elijah Miller", "Glenn Roberts", "Jacques Crocker", "Lance Sanchez"]
               
