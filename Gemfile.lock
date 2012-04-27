@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    heroku-rails (0.4.2)
+    heroku-rails-saas (0.1.0)
       heroku (>= 2.24.1)
 
 GEM
@@ -41,6 +41,6 @@ PLATFORMS
 DEPENDENCIES
   autotest
   growl-glue
-  heroku-rails!
+  heroku-rails-saas!
   rake (= 0.8.7)
   rspec (~> 2.0)
