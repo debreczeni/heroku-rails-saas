@@ -1,13 +1,14 @@
 Gem::Specification.new do |s|
-  s.name = "heroku-rails"
-  s.version = "0.4.2"
+  s.name = "heroku-rails-saas"
+  s.version = "0.1.0"
 
-  s.authors = ["Elijah Miller", "Glenn Roberts", "Jacques Crocker"]
+  s.authors = [ "Elijah Miller", "Glenn Roberts", "Jacques Crocker", "Lance Sanchez"]
+              
   s.summary = "Deployment and configuration tools for Heroku/Rails"
-  s.description = "Manage multiple Heroku instances/apps for a single Rails app using Rake. It's the Capistrano for Heroku, without the suck."
+  s.description = "Manage multiple Heroku instances/apps for a single Rails app using Rake."
 
   s.email = "railsjedi@gmail.com"
-  s.homepage = "http://github.com/railsjedi/heroku-rails"
+  s.homepage = "http://github.com/darkbushido/heroku-rails-saas"
   s.rubyforge_project = "none"
 
   s.require_paths = ["lib"]

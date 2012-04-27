@@ -1,3 +1,10 @@
+Heroku Rails SaaS
+
+v0.4.3
+============================================
+Forking Gem to Add support for multiple apps/environments to be run off the same rails code base
+
+
 Heroku Rails
 
 v0.2.0
