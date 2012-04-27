@@ -1,4 +1,4 @@
-Heroku Rails
+Heroku Rails SaaS
 =============
 
 Easier configuration and deployment of Rails apps on Heroku
@@ -6,8 +6,6 @@ Easier configuration and deployment of Rails apps on Heroku
 Configure all your Heroku enviroments via a YML file (config/heroku.yml) that defines all your environments, addons, and environment variables.
 Configure your app specific Heroku environment via a YML file (config/heroku/awesomeapp.yml) thats defines all your environments, addons, and 
 environment variables for awesomeapp.
-
-Heroku Rails also handles asset packaging (via jammit), deployment of assets to s3 (via jammit-s3).
 
 ## Install
 
@@ -17,20 +15,6 @@ Add this to your Gemfile:
 
     group :development do
       gem 'heroku-rails'
-    end
-
-### Rails 2
-
-To install add the following to config/environment.rb:
-
-    config.gem 'heroku-rails'
-
-Rake tasks are not automatically loaded from gems, so you’ll need to add the following to your Rakefile:
-
-    begin
-      require 'heroku/rails/tasks'
-    rescue LoadError
-      STDERR.puts "Run `rake gems:install` to install heroku-rails"
     end
 
 ## Configure
@@ -126,7 +110,8 @@ Need to add remotes for each app?
 
 A full list of tasks provided:
 
-    rake all                        # Select all Heroku apps for later command
+    rake all                        # Select all non Production Heroku apps for later command
+    rake all:production             # Select all Production Heroku apps for later command
     rake heroku:deploy              # Deploys, migrates and restarts latest code.
     rake heroku:apps                # Lists configured apps
     rake heroku:info                # Queries the heroku status info on each app
@@ -153,7 +138,7 @@ You can easily alias frequently used tasks within your application's Rakefile:
 
 With this in place, you can be a bit more terse:
 
-    rake staging console
+    rake all:staging console
     rake all deploy
 
 ### Deploy Hooks
@@ -185,17 +170,29 @@ When you ran `rails generate heroku:config`, it created a list of empty rake tas
     end
 
 
-## About Heroku Rails
+## About Heroku Rails SaaS
 
 ### Links
 
-Homepage:: <http://github.com/railsjedi/heroku-rails>
+Homepage:: <https://github.com/darkbushido/heroku-rails-saas>
 
-Issue Tracker:: <http://github.com/railsjedi/heroku-rails/issues>
+Issue Tracker:: <http://github.com/darkbushido/heroku-rails-saas/issues>
 
 ### License
 
-License:: Copyright (c) 2010 Jacques Crocker <railsjedi@gmail.com> released under the MIT license.
+License:: Copyright (c) 2012 Lance Sanchez <lance.sanchez@gmail.com> released under the MIT license.
+
+## Forked from Heroku Rails
+
+Heroku Rails SaaS is a fork/extension for Heroku Rails to add the ability to manage multiple apps with multiple enviroments
+
+### Heroku Rails Contributors
+
+* Jacques Crocker (railsjedi@gmail.com)
+
+### Heroku Rails License
+
+License:: Copyright (c) 2010 Jacques Crocker <railsjedi@gmail.com>, released under the MIT license.
 
 ## Forked from Heroku Sans
 
@@ -210,3 +207,5 @@ Heroku Rails is a fork and rewrite/reorganiziation of the heroku_sans gem. Herok
 ### Heroku Sans License
 
 License:: Copyright (c) 2009 Elijah Miller <elijah.miller@gmail.com>, released under the MIT license.
+
+
