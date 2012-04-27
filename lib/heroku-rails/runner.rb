@@ -111,7 +111,6 @@ module HerokuRails
         # default RACK_ENV and RAILS_ENV to the heroku_env (unless its manually set to something else)
         new_config["RACK_ENV"]  = HerokuRails::Config.extract_environment_from(app_env) unless new_config["RACK_ENV"]
         new_config["RAILS_ENV"] = HerokuRails::Config.extract_environment_from(app_env) unless new_config["RAILS_ENV"]
-
         # get the existing config from heroku's servers
         existing_config = @heroku.config_vars(app_name) || {}
 
@@ -120,7 +119,7 @@ module HerokuRails
         new_config.each do |new_key, new_val|
           add_config[new_key] = new_val unless existing_config[new_key] == new_val
         end
-
+        
         # persist the changes onto heroku
         unless add_config.empty?
           # add the config
@@ -128,8 +127,8 @@ module HerokuRails
           add_config.each do |key, val|
             set_config << "#{key}='#{val}' "
           end
-
           creation_command "heroku config:add #{set_config} --app #{app_name}"
+          system_with_echo("#{@config.cmd(app_env)} rails runner 'Rails.cache.clear' --app #{app_name}")
         end
       end
     end
