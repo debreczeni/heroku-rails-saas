@@ -1,14 +1,14 @@
-require 'heroku-rails'
+require 'heroku-rails-saas'
 
 HEROKU_CONFIG_FILE = File.join(HerokuRails::Config.root, 'config', 'heroku.yml')
 HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRails::Config.root, 'config', 'heroku')}/*.yml")
-HEROKU_CONFIG = HerokuRails::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
-HEROKU_RUNNER = HerokuRails::Runner.new(HEROKU_CONFIG)
+HEROKU_CONFIG = HerokuRailsSaas::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
+HEROKU_RUNNER = HerokuRailsSaas::Runner.new(HEROKU_CONFIG)
 
 # create all the environment specific tasks
 (HEROKU_CONFIG.apps).each do |app, hsh|
   hsh.each do |env, heroku_env|
-    app_name = HerokuRails::Config.app_name(app, env)
+    app_name = HerokuRailsSaas::Config.app_name(app, env)
     desc "Select #{app_name} Heroku app for later commands"
     task app_name do
       # callback switch_environment
@@ -231,8 +231,8 @@ namespace :heroku do
       HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
         system_with_echo "heroku pgdumps:capture --app #{app_name}"
         dump = `heroku pgdumps --app #{app_name}`.split("\n").last.split(" ").first
-        system_with_echo "mkdir -p #{HerokuRails::Config.root}/db/dumps"
-        file = "#{HerokuRails::Config.root}/db/dumps/#{dump}.sql.gz"
+        system_with_echo "mkdir -p #{HerokuRailsSaas::Config.root}/db/dumps"
+        file = "#{HerokuRailsSaas::Config.root}/db/dumps/#{dump}.sql.gz"
         url = `heroku pgdumps:url --app #{app_name} #{dump}`.chomp
         system_with_echo "wget", url, "-O", file
 

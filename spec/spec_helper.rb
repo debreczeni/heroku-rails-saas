@@ -1,4 +1,4 @@
-require 'heroku-rails'
+require 'heroku-rails-saas'
 require 'bundler/setup'
 
 

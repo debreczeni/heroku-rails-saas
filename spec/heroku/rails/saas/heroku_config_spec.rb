@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module HerokuRails
+module HerokuRailsSaas
   describe Config do
     before(:each) do
       config_files = {:default => config_path("heroku-config.yml"), :apps => [config_path("awesomeapp.yml"), config_path("mediocreapp.yml")]}

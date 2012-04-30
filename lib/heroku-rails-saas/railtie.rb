@@ -1,7 +1,7 @@
-module HerokuRails
+module HerokuRailsSaas
   class Railtie < ::Rails::Railtie
     rake_tasks do
-      HerokuRails::Config.root = ::Rails.root
+      HerokuRailsSaas::Config.root = ::Rails.root
       load 'heroku/rails/tasks.rb'
     end
   end

@@ -1,6 +1,6 @@
 require 'erb'
 
-module HerokuRails
+module HerokuRailsSaas
   class Config
 
     SEPERATOR = ":"

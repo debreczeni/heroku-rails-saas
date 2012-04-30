@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module HerokuRails
+module HerokuRailsSaas
   describe Runner do
     describe "each_heroku_app" do
       it "should return my apps" do
