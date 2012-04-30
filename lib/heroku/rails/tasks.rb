@@ -1,7 +1,7 @@
 require 'heroku-rails-saas'
 
-HEROKU_CONFIG_FILE = File.join(HerokuRails::Config.root, 'config', 'heroku.yml')
-HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRails::Config.root, 'config', 'heroku')}/*.yml")
+HEROKU_CONFIG_FILE = File.join(HerokuRailsSaas::Config.root, 'config', 'heroku.yml')
+HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRailsSaas::Config.root, 'config', 'heroku')}/*.yml")
 HEROKU_CONFIG = HerokuRailsSaas::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
 HEROKU_RUNNER = HerokuRailsSaas::Runner.new(HEROKU_CONFIG)
 
@@ -238,7 +238,7 @@ namespace :heroku do
 
         # TODO: these are a bit distructive...
         # system_with_echo "rake db:drop db:create"
-        # system_with_echo "gunzip -c #{file} | #{HerokuRails::Config.root}/script/dbconsole"
+        # system_with_echo "gunzip -c #{file} | #{HerokuRailsSaas::Config.root}/script/dbconsole"
         # system_with_echo "rake jobs:clear"
       end
     end
