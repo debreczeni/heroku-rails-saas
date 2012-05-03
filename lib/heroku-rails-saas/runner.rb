@@ -37,9 +37,9 @@ module HerokuRailsSaas
       each_heroku_app do |heroku_env, app_name, repo|
         next if @my_apps.include?(app_name)
 
-        stack = @config.stack(heroku_env)
-        stack_option = " --stack #{stack}" if stack.to_s.size > 0
-        creation_command "heroku create #{app_name}#{stack_option} --remote #{app_name}"
+        options = { :remote => app_name, :stack => @config.stack(heroku_env) }
+
+        @heroku.create(app_name, options)
       end
     end
 
