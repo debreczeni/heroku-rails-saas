@@ -93,7 +93,7 @@ namespace :heroku do
               puts "\n\nInvalid git tag!"
               invalid = true
             end
-          end  
+          end
         end while invalid
       else
         branch = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
@@ -112,7 +112,7 @@ namespace :heroku do
           exit(1)
         end
       end
-      
+
       Rake::Task["heroku:after_each_deploy"].reenable
       Rake::Task["heroku:after_each_deploy"].invoke(app_name)
       puts "\n"
