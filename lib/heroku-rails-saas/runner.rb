@@ -284,7 +284,9 @@ module HerokuRailsSaas
     end
 
     def command(*args)
-      raise "*** command \"#{args.join ' '}\" failed" unless system(*args)
+      unless system(*args)
+        raise "*** command \"#{args.join ' '}\" failed" unless ENV['STRICT_DEPLOY'] == '0'
+      end
     end
 
     def regex_for env
