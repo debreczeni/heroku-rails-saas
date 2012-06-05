@@ -298,7 +298,7 @@ module HerokuRailsSaas
     end
 
     def rails_cli script
-      Rails::VERSION::MAJOR < 3 ? ".script/#{script}" : "rails #{script}"
+      Rails::VERSION::MAJOR < 3 ? "./script/#{script}" : "rails #{script}"
     end
 
   end
