@@ -96,7 +96,7 @@ namespace :heroku do
           end
         end while invalid
         puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty?
-        to_deploy = "#{target_tag}^{}"
+        to_deploy = target_tag
       else
         to_deploy = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
         puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy." and exit(1) if to_deploy.empty?
