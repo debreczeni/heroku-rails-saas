@@ -130,7 +130,7 @@ module HerokuRailsSaas
           creation_command "heroku config:add #{set_config} --app #{app_name}"
 
           # This fails on a newly created app
-          system_with_echo("#{@config.cmd(app_env)} \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
+          system_with_echo("heroku run \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
         end
       end
     end
