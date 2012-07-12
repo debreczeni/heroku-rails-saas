@@ -106,7 +106,7 @@ namespace :heroku do
       @git_push_arguments << '--force'
 
       # ^0 is required so git dereferences the tag into a commit SHA (else Heroku's git server will throw up)
-      system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{to_deploy}^0:refs/heads/master"
+      system_with_echo "git push #{repo} #{@git_push_arguments.uniq.join(' ')} #{to_deploy}^0:refs/heads/master"
 
       system_with_echo "heroku maintenance:on --app #{app_name}"
 
