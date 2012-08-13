@@ -65,8 +65,8 @@ namespace :heroku do
     end
   end
 
-  desc "Deploys, migrates and restarts latest git tag"
-  task :deploy => "heroku:before_deploy" do |t, args|
+  desc "Deploys, migrates and restarts latest git tag (if user input is needed, specified default tag is tried first)"
+  task :deploy, [:default_tag] => ["heroku:before_deploy"] do |t, args|
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
       puts "\n\nDeploying to #{app_name}..."
       # set the current heroku_app so that callbacks can read the data
@@ -77,30 +77,27 @@ namespace :heroku do
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
       if heroku_env[HEROKU_RUNNER.regex_for(:production)]
-        all_tags = `git tag`
+        all_tags = `git tag`.split("\n")
+        input_tag = args.default_tag
         target_tag = `git describe --tags --abbrev=0`.chomp # Set latest tag as default
 
-        begin
+        until all_tags.include? input_tag do
           puts "\nGit tags:"
-          puts all_tags
-          print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
-          input_tag = STDIN.gets.chomp
-          if input_tag.present?
-            if all_tags[/^#{input_tag}\n/].present?
-              target_tag = input_tag
-              invalid = false
-            else
-              puts "\n\nInvalid git tag!"
-              invalid = true
-            end
-          end
-        end while invalid
-        puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty?
+          puts all_tags.join("\n")
+          print "\nPPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+          input_tag = STDIN.gets.strip
+          input_tag = target_tag if input_tag.blank?
+          puts "\n\nInvalid git tag!" unless all_tags.include? input_tag
+        end
+        target_tag = input_tag
+        puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty? or not all_tags.include? target_tag
         to_deploy = target_tag
       else
         to_deploy = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
         puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy." and exit(1) if to_deploy.empty?
       end
+
+      puts "Deploying tag #{to_deploy}"
 
       @git_push_arguments ||= []
       @git_push_arguments << '--force'
