@@ -294,7 +294,7 @@ module HerokuRailsSaas
         when :production then "production|prod|live"
         when :staging    then "staging|stage"
       end
-      Regexp.new("#{@config.class::SEPERATOR}(#{match})")
+      Regexp.new("#{@config.class::SEPARATOR}(#{match})")
     end
 
     def rails_cli script

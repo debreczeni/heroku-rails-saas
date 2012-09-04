@@ -3,7 +3,7 @@ require 'erb'
 module HerokuRailsSaas
   class Config
 
-    SEPERATOR = ":"
+    SEPARATOR = ":"
 
     class << self
       def root
@@ -15,11 +15,11 @@ module HerokuRailsSaas
       end
 
       def app_name(app, env)
-        "#{app}#{SEPERATOR}#{env}"
+        "#{app}#{SEPARATOR}#{env}"
       end
 
       def extract_environment_from(app_env)
-        name, env = app_env.split(SEPERATOR)
+        name, env = app_env.split(SEPARATOR)
         env
       end
     end
@@ -41,7 +41,7 @@ module HerokuRailsSaas
     # Returns the app name on heroku froma string format like so: `app:env`
     # Allows for `rake <app:env> [<app:env>] <command>`
     def app_name_on_heroku(string)
-      app_name, env = string.split(SEPERATOR)
+      app_name, env = string.split(SEPARATOR)
       apps[app_name][env]
     end
 
@@ -62,7 +62,7 @@ module HerokuRailsSaas
 
     # return the stack setting for a particular app environment
     def stack(app_env)
-      name, env = app_env.split(SEPERATOR)
+      name, env = app_env.split(SEPARATOR)
       stacks = self.settings['stacks'] || {}
       (stacks[name] && stacks[name][env]) || stacks['all']
     end
@@ -77,7 +77,7 @@ module HerokuRailsSaas
 
     # pull out the config setting hash for a particular app environment
     def config(app_env)
-      name, env = app_env.split(SEPERATOR)
+      name, env = app_env.split(SEPARATOR)
       config = self.settings['config'] || {}
       all = config['all'] || {}
 
@@ -91,7 +91,7 @@ module HerokuRailsSaas
 
     # pull out the scaling setting hash for a particular app environment
     def scale(app_env)
-      name, env = app_env.split(SEPERATOR)
+      name, env = app_env.split(SEPARATOR)
       scaling = self.settings['scale'] || {}
       all = scaling['all'] || {}
 
@@ -105,7 +105,7 @@ module HerokuRailsSaas
 
     # return a list of domains for a particular app environment
     def domains(app_env)
-      name, env = app_env.split(SEPERATOR)
+      name, env = app_env.split(SEPARATOR)
       domains = self.settings['domains'] || {}
       (domains[name] && domains[name][env]) || []
     end
@@ -122,7 +122,7 @@ module HerokuRailsSaas
     protected
 
     def app_setting_list(setting_key, app_env)
-      name, env = app_env.split(SEPERATOR)
+      name, env = app_env.split(SEPARATOR)
       setting = self.settings[setting_key] || {}
       all = setting['all'] || []
 
