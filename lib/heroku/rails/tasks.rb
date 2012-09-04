@@ -76,26 +76,21 @@ namespace :heroku do
 
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
-      if heroku_env[HEROKU_RUNNER.regex_for(:production)]
-        all_tags = `git tag`.split("\n")
-        input_tag = args.default_tag
-        target_tag = `git describe --tags --abbrev=0`.chomp # Set latest tag as default
+      all_tags = `git tag`.split("\n")
+      input_tag = args.default_tag
+      target_tag = `git describe --tags --abbrev=0`.chomp # Set latest tag as default
 
-        until all_tags.include? input_tag do
-          puts "\nGit tags:"
-          puts all_tags.join("\n")
-          print "\nPPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
-          input_tag = STDIN.gets.strip
-          input_tag = target_tag if input_tag.blank?
-          puts "\n\nInvalid git tag!" unless all_tags.include? input_tag
-        end
-        target_tag = input_tag
-        puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty? or not all_tags.include? target_tag
-        to_deploy = target_tag
-      else
-        to_deploy = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
-        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy." and exit(1) if to_deploy.empty?
+      until all_tags.include? input_tag do
+        puts "\nGit tags:"
+        puts all_tags.join("\n")
+        print "\nPPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+        input_tag = STDIN.gets.strip
+        input_tag = target_tag if input_tag.blank?
+        puts "\n\nInvalid git tag!" unless all_tags.include? input_tag
       end
+      target_tag = input_tag
+      puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty? or not all_tags.include? target_tag
+      to_deploy = target_tag
 
       puts "Deploying tag #{to_deploy}"
 
