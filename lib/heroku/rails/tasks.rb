@@ -103,6 +103,9 @@ namespace :heroku do
       system_with_echo "heroku maintenance:on --app #{app_name}"
 
       Rake::Task["heroku:setup:config"].invoke
+
+      HEROKU_RUNNER.clear_cache app_name
+
       system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
 
       system_with_echo "heroku maintenance:off --app #{app_name}"

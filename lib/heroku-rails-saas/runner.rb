@@ -130,8 +130,9 @@ module HerokuRailsSaas
           creation_command "heroku config:add #{set_config} --app #{app_name}"
 
           # This fails on a newly created app
-          system_with_echo("heroku run \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
+          clear_cache app_name
         end
+
       end
     end
 
@@ -202,6 +203,10 @@ module HerokuRailsSaas
         # display the destructive commands
         output_destroy_commands(app_name)
       end
+    end
+
+    def clear_cache app_name
+      system_with_echo("heroku run \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
     end
 
     def scale
