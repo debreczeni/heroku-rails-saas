@@ -140,34 +140,35 @@ module HerokuRailsSaas
     def setup_addons
       authorize unless @heroku
       each_heroku_app do |heroku_env, app_name, repo|
-        # get the addons that we are aiming towards
-        addons = @config.addons(heroku_env)
+        addons_in_config = @config.addons(heroku_env)
 
-        # get the addons that are already on the servers
-        existing_addons = (@heroku.installed_addons(app_name) || []).map{|a| a["name"]}
+        addons_on_heroku = {}
+        (@heroku.installed_addons(app_name) || []).each do |installed_addon|
+          name, slug = installed_addon['name'].split(':')
+          addons_on_heroku[name] = slug
+        end
 
-        # all apps need the shared database
-        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/]}
+        unless addons_in_config.keys.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/] }
+          addons_in_config['shared-database'] = '5mb'
+        end
 
-        # remove the addons that need to be removed
-        existing_addons.each do |existing_addon|
-          # check to see if we need to delete this addon
-          unless addons.include?(existing_addon)
-            # delete this addon if they arent on the approved list
-            destroy_command "heroku addons:remove #{existing_addon} --app #{app_name} --confirm #{app_name}"
+        addons_on_heroku.each do |name, slug|
+          if addons_in_config.include?(name)
+            unless addons_in_config[name] == slug
+              upgrade_command "heroku addons:upgrade #{name}:#{addons_in_config[name]} --app #{app_name} --confirm #{app_name}"
+            end
+          else
+            destroy_command "heroku addons:remove #{name}:#{slug} --app #{app_name} --confirm #{app_name}"
           end
         end
 
-        # add the addons that dont exist already
-        addons.each do |addon|
-          # check to see if we need to add this addon
-          unless existing_addons.include?(addon)
-            # add this addon if they are not already added
-            creation_command "heroku addons:add #{addon} --app #{app_name}"
+        addons_in_config.each do |name, slug|
+          unless addons_on_heroku.include?(name)
+            creation_command "heroku addons:add #{name}:#{slug} --app #{app_name}"
           end
         end
 
-        # display the destructive commands
+        output_upgrade_commands(app_name)
         output_destroy_commands(app_name)
       end
     end
@@ -277,7 +278,7 @@ module HerokuRailsSaas
 
     def output_destroy_commands(app)
       if @destroy_commands.try(:any?)
-        puts "The #{app} had a few things removed from the heroku.yml."
+        puts "The #{app} had a few things removed from heroku.yml."
         puts "If they are no longer neccessary, then run the following commands:\n\n"
         @destroy_commands.each do |destroy_command|
           puts destroy_command
@@ -286,6 +287,22 @@ module HerokuRailsSaas
       end
       # clear destroy commands
       @destroy_commands = []
+    end
+
+    def upgrade_command(*args)
+      @upgrade_commands ||= []
+      @upgrade_commands << args.join(' ')
+    end
+
+    def output_upgrade_commands(app)
+      if @upgrade_commands.try(:any?)
+        puts "The #{app} had a few things changed in heroku.yml"
+        puts "To apply these changes run the following commands:\n\n"
+        @upgrade_commands.each do |upgrade_command|
+          puts upgrade_command
+        end
+      end
+      @upgrade_commands = []
     end
 
     def command(*args)

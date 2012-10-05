@@ -142,13 +142,27 @@ module HerokuRailsSaas
           @addons = @config.addons('awesomeapp:staging')
         end
 
+        it "should be a Hash" do
+          @addons.class.should == Hash
+        end
+
         it "should include addons defined in 'all'" do
-          @addons.should include('scheduler:standard')
-          @addons.should include('newrelic:bronze')
+          @addons.should include('scheduler')
+          @addons['scheduler'].should == 'standard'
+          @addons.should include('newrelic')
+          @addons['newrelic'].should == 'bronze'
+          @addons.should include('amazon_rds')
+          @addons['amazon_rds'].should be_nil
         end
 
         it "should not include addons defined in 'production'" do
-          @addons.should_not include('ssl:piggyback')
+          @addons.should_not include('ssl')
+          @addons.should_not include('cron')
+        end
+
+        it "should include addons defined in 'staging'" do
+          @addons['redistogo'].should_not be_nil
+          @addons['redistogo'].should == 'nano'
         end
       end
     end

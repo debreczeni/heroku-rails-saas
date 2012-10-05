@@ -12,6 +12,7 @@ collaborators:
 
 addons:
   # add any other addons here
+  - amazon_rds
   - scheduler:standard
   - newrelic:bronze
 
