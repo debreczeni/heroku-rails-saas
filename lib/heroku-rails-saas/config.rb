@@ -116,7 +116,12 @@ module HerokuRailsSaas
 
     # return a list of addons for a particular app environment
     def addons(app_env)
-      app_setting_list('addons', app_env)
+      addons_hash = {}
+      app_setting_list('addons', app_env).each do |setting|
+        name, slug = setting.split(':')
+        addons_hash[name] = slug
+      end
+      addons_hash
     end
 
     protected
