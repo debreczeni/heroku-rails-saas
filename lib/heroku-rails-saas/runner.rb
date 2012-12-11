@@ -136,6 +136,10 @@ module HerokuRailsSaas
       end
     end
 
+    def addon_full_name(name, slug)
+      "#{name}#{slug.nil? || slug.empty? ? "" : ":"}#{slug}"
+    end
+
     # setup the addons for heroku
     def setup_addons
       authorize unless @heroku
@@ -155,16 +159,16 @@ module HerokuRailsSaas
         addons_on_heroku.each do |name, slug|
           if addons_in_config.include?(name)
             unless addons_in_config[name] == slug
-              upgrade_command "heroku addons:upgrade #{name}:#{addons_in_config[name]} --app #{app_name} --confirm #{app_name}"
+              upgrade_command "heroku addons:upgrade #{addon_full_name(name,addons_in_config[name])} --app #{app_name} --confirm #{app_name}"
             end
           else
-            destroy_command "heroku addons:remove #{name}:#{slug} --app #{app_name} --confirm #{app_name}"
+            destroy_command "heroku addons:remove #{addon_full_name(name,slug)} --app #{app_name} --confirm #{app_name}"
           end
         end
 
         addons_in_config.each do |name, slug|
           unless addons_on_heroku.include?(name)
-            creation_command "heroku addons:add #{name}:#{slug} --app #{app_name}"
+            creation_command "heroku addons:add #{addon_full_name(name,slug)} --app #{app_name}"
           end
         end
 
