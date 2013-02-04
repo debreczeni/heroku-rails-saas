@@ -83,7 +83,7 @@ namespace :heroku do
       until all_tags.include? input_tag do
         puts "\nGit tags:"
         puts all_tags.join("\n")
-        print "\nPPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+        print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
         input_tag = STDIN.gets.strip
         input_tag = target_tag if input_tag.blank?
         puts "\n\nInvalid git tag!" unless all_tags.include? input_tag
