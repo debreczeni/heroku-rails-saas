@@ -19,3 +19,7 @@ addons:
 scale:
   web: 1
   worker: 0
+
+domains:
+  staging:
+    - 'staging.lvh.me'

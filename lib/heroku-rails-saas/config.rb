@@ -107,8 +107,12 @@ module HerokuRailsSaas
     def domains(app_env)
       name, env = app_env.split(SEPARATOR)
       domains = self.settings['domains'] || {}
-      (domains[name] && domains[name][env]) || []
+      domains_from_app_config = (domains[name] && domains[name][env]) || []
+      domains_from_global_config = (domains['all'] && domains['all'][env]) || []
+
+      domains_from_app_config + domains_from_global_config
     end
+
     # return a list of collaborators for a particular app environment
     def collaborators(app_env)
       app_setting_list('collaborators', app_env)

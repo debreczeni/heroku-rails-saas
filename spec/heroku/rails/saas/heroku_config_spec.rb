@@ -117,6 +117,10 @@ module HerokuRailsSaas
           @domains = @config.domains('awesomeapp:staging')
         end
 
+        it "should include the domains defined in global config file" do
+          @domains.should include('staging.lvh.me')
+        end
+
         it "should include the domains defined in 'staging'" do
           @domains.should include('staging.awesomeapp.com')
         end
