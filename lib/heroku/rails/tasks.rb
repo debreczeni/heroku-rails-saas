@@ -1,8 +1,13 @@
 require 'heroku-rails-saas'
 
-HEROKU_CONFIG_FILE = File.join(HerokuRailsSaas::Config.root, 'config', 'heroku.yml')
-HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRailsSaas::Config.root, 'config', 'heroku')}/*.yml")
-HEROKU_CONFIG = HerokuRailsSaas::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
+unless defined? HEROKU_CONFIG
+  HEROKU_CONFIG_FILE = File.join(HerokuRailsSaas::Config.root, 'config', 'heroku.yml')
+  HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRailsSaas::Config.root, 'config', 'heroku')}/*.yml")
+  HEROKU_CONFIG = HerokuRailsSaas::Config.new({
+    :default => HEROKU_CONFIG_FILE,
+    :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
+end
+
 HEROKU_RUNNER = HerokuRailsSaas::Runner.new(HEROKU_CONFIG)
 
 # create all the environment specific tasks
