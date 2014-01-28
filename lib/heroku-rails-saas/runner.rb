@@ -152,10 +152,6 @@ module HerokuRailsSaas
           addons_on_heroku[name] = slug
         end
 
-        unless addons_in_config.keys.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/] }
-          addons_in_config['shared-database'] = '5mb'
-        end
-
         addons_on_heroku.each do |name, slug|
           if addons_in_config.include?(name)
             unless addons_in_config[name] == slug
