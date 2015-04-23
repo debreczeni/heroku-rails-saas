@@ -129,8 +129,8 @@ module HerokuRailsSaas
           end
           creation_command "heroku config:add #{set_config} --app #{app_name}"
 
-          # This fails on a newly created app
-          clear_cache app_name
+          # unless on a newly created app
+          clear_cache app_name unless @heroku.releases(app_name).last['commit'].nil?
         end
 
       end
