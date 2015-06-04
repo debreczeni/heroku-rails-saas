@@ -63,8 +63,8 @@ module HerokuRailsSaas
     # return the stack setting for a particular app environment
     def stack(app_env)
       name, env = app_env.split(SEPARATOR)
-      stacks = self.settings['stacks'] || {}
-      (stacks[name] && stacks[name][env]) || stacks['all']
+      stack = settings['stack'] || {}
+      (stack[name] && stack[name][env]) || stack['all']
     end
 
     def cmd(app_env)

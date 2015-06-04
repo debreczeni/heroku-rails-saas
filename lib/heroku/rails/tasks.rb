@@ -219,7 +219,7 @@ namespace :heroku do
   desc "Setup Heroku deploy environment from heroku.yml config"
   task :setup => [
     "heroku:setup:apps",
-    "heroku:setup:stacks",
+    # "heroku:setup:stacks", not yet ready for prod
     "heroku:setup:collaborators",
     "heroku:setup:config",
     "heroku:setup:addons",
