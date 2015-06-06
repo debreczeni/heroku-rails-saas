@@ -214,10 +214,14 @@ module HerokuRailsSaas
       authorize unless @heroku
       each_heroku_app do |heroku_env, app_name, repo|
         scaling = @config.scale(heroku_env)
-        scaling.each do |process_name, instance_count|
+        scaling.each do |process_name, dyno_conf|
           begin
-            puts "Scaling app #{app_name} process #{process_name} to #{instance_count}"
-            response = @heroku.ps_scale(app_name, {:type => process_name, :qty => instance_count })
+            puts "Scaling app #{app_name} process #{process_name} to #{dyno_conf}"
+            response = @heroku.ps_scale(app_name,
+                                        type: process_name,
+                                        qty:  dyno_conf[0],
+                                        size: dyno_conf[1]
+                                       )
             puts "Response: #{response}"
           rescue => e
             puts "Failed to scale #{app_name}. Error: #{e.inspect}"
