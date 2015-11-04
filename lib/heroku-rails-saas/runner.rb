@@ -207,7 +207,7 @@ module HerokuRailsSaas
     end
 
     def clear_cache app_name
-      system_with_echo("heroku run \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
+      system_with_echo("heroku run \"#{rails_cli(:runner)} \\\"Rails.cache.clear\\\"\" --app #{app_name}")
     end
 
     def scale
