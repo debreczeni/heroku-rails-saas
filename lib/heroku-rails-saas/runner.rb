@@ -72,11 +72,13 @@ module HerokuRailsSaas
         collaborator_emails = @config.collaborators(heroku_env)
 
         # add current user to collaborator list (always)
-        # collaborator_emails << @heroku.user unless collaborator_emails.include?(@heroku.user)
-        # collaborator_emails << heroku_app_info[:owner] unless collaborator_emails.include?(heroku_app_info[:owner])
+        collaborator_emails << @heroku.user unless collaborator_emails.include?(@heroku.user)
+        collaborator_emails << heroku_app_info[:owner] unless collaborator_emails.include?(heroku_app_info[:owner])
 
         # get existing collaborators
-        existing_emails = heroku_app_info[:collaborators].to_a.map{|c| c[:email]}
+        existing_emails = `heroku sharing -a #{app_name}`.lines.reject{ |a| 
+          !(a =~ /collaborator|owner/) 
+        }.map{ |l| l.split(' ').first }
 
         # get the list of collaborators to delete
         existing_emails.each do |existing_email|
