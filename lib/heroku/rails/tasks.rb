@@ -1,8 +1,13 @@
 require 'heroku-rails-saas'
 
-HEROKU_CONFIG_FILE = File.join(HerokuRailsSaas::Config.root, 'config', 'heroku.yml')
-HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRailsSaas::Config.root, 'config', 'heroku')}/*.yml")
-HEROKU_CONFIG = HerokuRailsSaas::Config.new({:default => HEROKU_CONFIG_FILE, :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
+unless defined? HEROKU_CONFIG
+  HEROKU_CONFIG_FILE = File.join(HerokuRailsSaas::Config.root, 'config', 'heroku.yml')
+  HEROKU_APP_SPECIFIC_CONFIG_FILES = Dir.glob("#{File.join(HerokuRailsSaas::Config.root, 'config', 'heroku')}/*.yml")
+  HEROKU_CONFIG = HerokuRailsSaas::Config.new({
+    :default => HEROKU_CONFIG_FILE,
+    :apps => HEROKU_APP_SPECIFIC_CONFIG_FILES})
+end
+
 HEROKU_RUNNER = HerokuRailsSaas::Runner.new(HEROKU_CONFIG)
 
 # create all the environment specific tasks
@@ -65,8 +70,8 @@ namespace :heroku do
     end
   end
 
-  desc "Deploys, migrates and restarts latest git tag"
-  task :deploy => "heroku:before_deploy" do |t, args|
+  desc "Deploys, migrates and restarts latest git tag (if user input is needed, specified default tag is tried first)"
+  task :deploy, [:default_tag] => ["heroku:before_deploy"] do |t, args|
     HEROKU_RUNNER.each_heroku_app do |heroku_env, app_name, repo|
       puts "\n\nDeploying to #{app_name}..."
       # set the current heroku_app so that callbacks can read the data
@@ -76,40 +81,36 @@ namespace :heroku do
 
       cmd = HEROKU_CONFIG.cmd(heroku_env)
 
-      if heroku_env[HEROKU_RUNNER.regex_for(:production)]
-        all_tags = `git tag`
-        target_tag = `git describe --tags --abbrev=0`.chomp # Set latest tag as default
+      all_tags = `git tag`.split("\n")
+      input_tag = args.default_tag
+      target_tag = `git describe --tags --abbrev=0`.chomp # Set latest tag as default
 
-        begin
-          puts "\nGit tags:"
-          puts all_tags
-          print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
-          input_tag = STDIN.gets.chomp
-          if input_tag.present?
-            if all_tags[/^#{input_tag}\n/].present?
-              target_tag = input_tag
-              invalid = false
-            else
-              puts "\n\nInvalid git tag!"
-              invalid = true
-            end
-          end
-        end while invalid
-        puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty?
-        to_deploy = target_tag
-      else
-        to_deploy = `git branch`.scan(/^\* (.*)\n/).flatten.first.to_s
-        puts "Unable to determine the current git branch, please checkout the branch you'd like to deploy." and exit(1) if to_deploy.empty?
+      until all_tags.include? input_tag do
+        puts "\nGit tags:"
+        puts all_tags.join("\n")
+        print "\nPlease enter a tag to deploy (or hit Enter for \"#{target_tag}\"): "
+        input_tag = STDIN.gets.strip
+        input_tag = target_tag if input_tag.blank?
+        puts "\n\nInvalid git tag!" unless all_tags.include? input_tag
       end
+      target_tag = input_tag
+      puts "Unable to determine the tag to deploy." and exit(1) if target_tag.empty? or not all_tags.include? target_tag
+      to_deploy = target_tag
+
+      puts "Deploying tag #{to_deploy}"
 
       @git_push_arguments ||= []
       @git_push_arguments << '--force'
 
-      system_with_echo "git push #{repo} #{@git_push_arguments.join(' ')} #{to_deploy}:master"
+      # ^0 is required so git dereferences the tag into a commit SHA (else Heroku's git server will throw up)
+      system_with_echo "git push #{repo} #{@git_push_arguments.uniq.join(' ')} #{to_deploy}^0:refs/heads/master"
 
       system_with_echo "heroku maintenance:on --app #{app_name}"
 
       Rake::Task["heroku:setup:config"].invoke
+
+      HEROKU_RUNNER.clear_cache app_name
+
       system_with_echo "#{cmd} rake --app #{app_name} db:migrate && heroku restart --app #{app_name}"
 
       system_with_echo "heroku maintenance:off --app #{app_name}"
@@ -218,7 +219,7 @@ namespace :heroku do
   desc "Setup Heroku deploy environment from heroku.yml config"
   task :setup => [
     "heroku:setup:apps",
-    "heroku:setup:stacks",
+    # "heroku:setup:stacks", not yet ready for prod
     "heroku:setup:collaborators",
     "heroku:setup:config",
     "heroku:setup:addons",

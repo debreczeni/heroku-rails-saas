@@ -76,7 +76,12 @@ module HerokuRailsSaas
         collaborator_emails << heroku_app_info[:owner] unless collaborator_emails.include?(heroku_app_info[:owner])
 
         # get existing collaborators
-        existing_emails = heroku_app_info[:collaborators].to_a.map{|c| c[:email]}
+        app_collaborators = `heroku sharing -a #{app_name}`
+        existing_emails = Array.new()   
+        app_collaborators.split("\n").each do |collaborator|
+          email = collaborator.split('collaborator').first().strip
+          existing_emails << email unless email.eql? collaborator
+        end
 
         # get the list of collaborators to delete
         existing_emails.each do |existing_email|
@@ -129,44 +134,46 @@ module HerokuRailsSaas
           end
           creation_command "heroku config:add #{set_config} --app #{app_name}"
 
-          # This fails on a newly created app
-          system_with_echo("#{@config.cmd(app_env)} \"#{rails_cli(:runner)} 'Rails.cache.clear'\" --app #{app_name}")
+          # unless on a newly created app
+          clear_cache app_name unless @heroku.releases(app_name).last['commit'].nil?
         end
+
       end
+    end
+
+    def addon_full_name(name, slug)
+      "#{name}#{slug.nil? || slug.empty? ? "" : ":"}#{slug}"
     end
 
     # setup the addons for heroku
     def setup_addons
       authorize unless @heroku
       each_heroku_app do |heroku_env, app_name, repo|
-        # get the addons that we are aiming towards
-        addons = @config.addons(heroku_env)
+        addons_in_config = @config.addons(heroku_env)
 
-        # get the addons that are already on the servers
-        existing_addons = (@heroku.installed_addons(app_name) || []).map{|a| a["name"]}
+        addons_on_heroku = {}
+        (@heroku.installed_addons(app_name) || []).each do |installed_addon|
+          name, slug = installed_addon['name'].split(':')
+          addons_on_heroku[name] = slug
+        end
 
-        # all apps need the shared database
-        addons << "shared-database:5mb" unless addons.any? {|x| x[/heroku-postgresql|shared-database|heroku-shared-postgresql|amazon_rds/]}
-
-        # remove the addons that need to be removed
-        existing_addons.each do |existing_addon|
-          # check to see if we need to delete this addon
-          unless addons.include?(existing_addon)
-            # delete this addon if they arent on the approved list
-            destroy_command "heroku addons:remove #{existing_addon} --app #{app_name} --confirm #{app_name}"
+        addons_on_heroku.each do |name, slug|
+          if addons_in_config.include?(name)
+            unless addons_in_config[name] == slug
+              upgrade_command "heroku addons:upgrade #{addon_full_name(name,addons_in_config[name])} --app #{app_name} --confirm #{app_name}"
+            end
+          else
+            destroy_command "heroku addons:remove #{addon_full_name(name,slug)} --app #{app_name} --confirm #{app_name}"
           end
         end
 
-        # add the addons that dont exist already
-        addons.each do |addon|
-          # check to see if we need to add this addon
-          unless existing_addons.include?(addon)
-            # add this addon if they are not already added
-            creation_command "heroku addons:add #{addon} --app #{app_name}"
+        addons_in_config.each do |name, slug|
+          unless addons_on_heroku.include?(name)
+            creation_command "heroku addons:add #{addon_full_name(name,slug)} --app #{app_name}"
           end
         end
 
-        # display the destructive commands
+        output_upgrade_commands(app_name)
         output_destroy_commands(app_name)
       end
     end
@@ -204,14 +211,22 @@ module HerokuRailsSaas
       end
     end
 
+    def clear_cache app_name
+      system_with_echo("heroku run \"#{rails_cli(:runner)} \\\"Rails.cache.clear\\\"\" --app #{app_name}")
+    end
+
     def scale
       authorize unless @heroku
       each_heroku_app do |heroku_env, app_name, repo|
         scaling = @config.scale(heroku_env)
-        scaling.each do |process_name, instance_count|
+        scaling.each do |process_name, dyno_conf|
           begin
-            puts "Scaling app #{app_name} process #{process_name} to #{instance_count}"
-            response = @heroku.ps_scale(app_name, {:type => process_name, :qty => instance_count })
+            puts "Scaling app #{app_name} process #{process_name} to #{dyno_conf}"
+            response = @heroku.ps_scale(app_name,
+                                        type: process_name,
+                                        qty:  dyno_conf[0],
+                                        size: dyno_conf[1]
+                                       )
             puts "Response: #{response}"
           rescue => e
             puts "Failed to scale #{app_name}. Error: #{e.inspect}"
@@ -272,7 +287,7 @@ module HerokuRailsSaas
 
     def output_destroy_commands(app)
       if @destroy_commands.try(:any?)
-        puts "The #{app} had a few things removed from the heroku.yml."
+        puts "The #{app} had a few things removed from heroku.yml."
         puts "If they are no longer neccessary, then run the following commands:\n\n"
         @destroy_commands.each do |destroy_command|
           puts destroy_command
@@ -281,6 +296,22 @@ module HerokuRailsSaas
       end
       # clear destroy commands
       @destroy_commands = []
+    end
+
+    def upgrade_command(*args)
+      @upgrade_commands ||= []
+      @upgrade_commands << args.join(' ')
+    end
+
+    def output_upgrade_commands(app)
+      if @upgrade_commands.try(:any?)
+        puts "The #{app} had a few things changed in heroku.yml"
+        puts "To apply these changes run the following commands:\n\n"
+        @upgrade_commands.each do |upgrade_command|
+          puts upgrade_command
+        end
+      end
+      @upgrade_commands = []
     end
 
     def command(*args)
@@ -294,7 +325,7 @@ module HerokuRailsSaas
         when :production then "production|prod|live"
         when :staging    then "staging|stage"
       end
-      Regexp.new("#{@config.class::SEPERATOR}(#{match})")
+      Regexp.new("#{@config.class::SEPARATOR}(#{match})")
     end
 
     def rails_cli script
