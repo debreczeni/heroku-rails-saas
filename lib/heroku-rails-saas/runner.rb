@@ -76,8 +76,8 @@ module HerokuRailsSaas
         collaborator_emails << heroku_app_info[:owner] unless collaborator_emails.include?(heroku_app_info[:owner])
 
         # get existing collaborators
-        existing_emails = `heroku sharing -a #{app_name}`.lines.reject{ |a| 
-          !(a =~ /collaborator|owner/) 
+        existing_emails = `heroku access -a #{app_name}`.lines.reject{ |a|
+          !(a =~ /collaborator|owner/)
         }.map{ |l| l.split(' ').first }
 
         # get the list of collaborators to delete
@@ -85,7 +85,7 @@ module HerokuRailsSaas
           # check to see if we need to delete this person
           unless collaborator_emails.include?(existing_email)
             # delete that collaborator if they arent on the approved list
-            destroy_command "heroku sharing:remove #{existing_email} --app #{app_name}"
+            destroy_command "heroku access:remove #{existing_email} --app #{app_name}"
           end
         end
 
@@ -94,7 +94,7 @@ module HerokuRailsSaas
           # check to see if we need to add this person
           unless existing_emails.include?(collaborator_email)
             # add the collaborator if they are not already on the server
-            creation_command "heroku sharing:add #{collaborator_email} --app #{app_name}"
+            creation_command "heroku access:add #{collaborator_email} --app #{app_name}"
           end
         end
 
