@@ -12,5 +12,14 @@ collaborators:
 
 addons:
   # add any other addons here
+  - amazon_rds
   - scheduler:standard
   - newrelic:bronze
+
+scale:
+  web: 1
+  worker: 0
+
+domains:
+  staging:
+    - 'staging.lvh.me'

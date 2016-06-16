@@ -30,6 +30,8 @@ addons:
     # list production env specific addons here
     - ssl:piggyback
     - cron:daily
+  staging:
+    - redistogo:nano
 
 scale:
   production:
