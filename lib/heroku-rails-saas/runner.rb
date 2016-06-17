@@ -49,14 +49,13 @@ module HerokuRailsSaas
       each_heroku_app do |heroku_env, app_name, repo|
         # get the intended stack setting
         stack = @config.stack(heroku_env)
-
         # get the remote info about the app from heroku
         heroku_app_info = @heroku.info(app_name) || {}
 
         # if the stacks don't match, then perform a migration
         if stack != heroku_app_info[:stack]
           puts "Migrating the app: #{app_name} to the stack: #{stack}"
-          creation_command "heroku stack:migrate #{stack} --app #{app_name}"
+          creation_command "heroku stack:set #{stack} --app #{app_name}"
         end
       end
     end
